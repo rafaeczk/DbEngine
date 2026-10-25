@@ -16,7 +16,7 @@ void print_help(const char* command) {
         }
         else if (_stricmp(command, "insert-into") == 0) {
             printf(" Uzycie dla: insert-into\n");
-            printf("   <db_file> insert-into <nazwa_tabeli> <wartosc1,wartosc2...>\n\n");
+            printf("   <db_file> insert-into <nazwa_tabeli> <wartosc1,wartosc2...> <wartosc3,wartosc4, ...> ...\n\n");
             printf(" - wartosci     : Wartości po przecinku w kolejnosci kolumn w schemacie.\n");
             printf(" Przyklad       : mydb.db insert-into uzytkownicy Jan,25,1500.50\n");
         }
