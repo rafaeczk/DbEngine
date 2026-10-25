@@ -28,7 +28,7 @@ void print_help(const char* command) {
         }
         else if (_stricmp(command, "delete-from") == 0) {
             printf(" Uzycie dla: delete-from\n");
-            printf("   <db_file> delete-from <nazwa_tabeli> <numer_wiersza>\n\n");
+            printf("   <db_file> delete-from <nazwa_tabeli> <numer_wiersza1> <numer_wiersza2> ...\n\n");
             printf(" - numer_wiersza: Numer aktywnego wiersza (od 1).\n");
             printf(" Przyklad       : mydb.db delete-from uzytkownicy 2\n");
         }
