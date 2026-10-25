@@ -25,28 +25,25 @@ int main(int argc, char *argv[]) {
 
     // INIT
 
-    const char* db_filename = NULL;
-    const char* command = NULL;
-
-    if (init(argc, argv, &db_filename, &command) != 0) {
+    if (init(argc, argv) != 0) {
         return 1;
     }
 
     // WRITE
 
-    if (_stricmp(command, "create-table") == 0) {
+    if (_stricmp(argv[1], "create-table") == 0) {
         if (create_table(argc, argv) != 0) {
             return 1;
         }
     }
 
-    if (_stricmp(command, "drop-table") == 0) {
+    if (_stricmp(argv[1], "drop-table") == 0) {
         if (drop_table(argc, argv) != 0) {
             return 1;
         }
     }
 
-    if (_stricmp(command, "insert-into") == 0) {
+    if (_stricmp(argv[1], "insert-into") == 0) {
         if (insert_into(argc, argv) != 0) {
             return 1;
         }
@@ -54,7 +51,7 @@ int main(int argc, char *argv[]) {
 
     // DELETE
 
-    if (_stricmp(command, "delete-from") == 0) {
+    if (_stricmp(argv[1], "delete-from") == 0) {
         if (delete_from(argc, argv) != 0) {
             return 1;
         }
@@ -62,13 +59,13 @@ int main(int argc, char *argv[]) {
 
     // READ
 
-    if (_stricmp(command, "show-tables") == 0) {
+    if (_stricmp(argv[1], "show-tables") == 0) {
         if (show_tables(argc, argv) != 0) {
             return 1;
         }
     }
 
-    if (_stricmp(command, "select-from") == 0) {
+    if (_stricmp(argv[1], "select-from") == 0) {
         if (select_from(argc, argv) != 0) {
             return 1;
         }

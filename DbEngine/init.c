@@ -7,21 +7,14 @@
 #include "config.h"
 #include "structures.h"
 
-int init(int argc, char* argv[], char** db_filename, char** command) {
-    if (argc < 3) {
-        fprintf(stderr, "Uzycie: %s <sciezka_do_db> <komenda> [argumenty...]\n", argv[0]);
-        return 1;
-    }
+int init(int argc, char* argv[]) {
+    const char* db_filename = argv[1];
 
-    *db_filename = argv[1];
-    *command = argv[2];
-
-    // Otwarcie/utworzenie bazy danych, jesli plik jeszcze nie istnieje
     FILE* db_file = NULL;
-    fopen_s(&db_file, *db_filename, "rb+");
+    fopen_s(&db_file, db_filename, "rb+");
 
     if (!db_file) {
-        fopen_s(&db_file, *db_filename, "wb+");
+        fopen_s(&db_file, db_filename, "wb+");
         if (!db_file) {
             perror("Blad: Nie mozna utworzyc ani otworzyc pliku bazy");
             return 1;
@@ -35,14 +28,12 @@ int init(int argc, char* argv[], char** db_filename, char** command) {
 
         fwrite(&header, sizeof(DBHeader), 1, db_file);
         fflush(db_file);
-        printf("Inicjalizacja nowej bazy danych: %s\n", *db_filename);
+        printf("Inicjalizacja nowej bazy danych: %s\n", db_filename);
     }
     else {
         DBHeader header;
-        int status = fread(&header, sizeof(DBHeader), 1, db_file);
-        if (status != 1 || header.magic != DB_MAGIC) {
-            printf("%d %d %d", header.magic, DB_MAGIC, status);
-            fprintf(stderr, "Blad: Wybrany plik '%s' nie jest poprawnym plikiem bazy danych!\n", *db_filename);
+        if (fread(&header, sizeof(DBHeader), 1, db_file) != 1 || header.magic != DB_MAGIC) {
+            fprintf(stderr, "Blad: Wybrany plik '%s' nie jest poprawnym plikiem bazy danych!\n", db_filename);
             fclose(db_file);
             return 1;
         }
