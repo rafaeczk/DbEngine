@@ -6,8 +6,10 @@
 
 #include <stdio.h>
 
-int drop_table(int argc, char* argv[]) {
-	if (argc != 4) {
+int drop_table(int argc, char* argv[])
+{
+	if (argc != 4)
+	{
 		fprintf(stderr, "Blad: Niepoprawna liczba argumentow!\n");
 		print_help(argv[2]);
 		return 1;
@@ -18,27 +20,32 @@ int drop_table(int argc, char* argv[]) {
 
 	FILE* db_file = NULL;
 	fopen_s(&db_file, db_filename, "rb+");
-	if (!db_file) {
+	if (!db_file)
+	{
 		fprintf(stderr, "Blad: Nie mozna otworzyc pliku bazy '%s'!\n", db_filename);
 		return 1;
 	}
 
 	DBHeader header;
-	if (fread(&header, sizeof(DBHeader), 1, db_file) != 1 || header.magic != DB_MAGIC) {
+	if (fread(&header, sizeof(DBHeader), 1, db_file) != 1 || header.magic != DB_MAGIC)
+	{
 		fprintf(stderr, "Blad: Niepoprawny plik bazy danych!\n");
 		fclose(db_file);
 		return 1;
 	}
 
 	int table_index = -1;
-	for (uint32_t i = 0; i < header.table_count; i++) {
-		if (_stricmp(header.tables[i].name, table_name) == 0) {
+	for (uint32_t i = 0; i < header.table_count; i++)
+	{
+		if (_stricmp(header.tables[i].name, table_name) == 0)
+		{
 			table_index = (int)i;
 			break;
 		}
 	}
 
-	if (table_index == -1) {
+	if (table_index == -1)
+	{
 		fprintf(stderr, "Blad: Tabela '%s' nie istnieje w bazie!\n", table_name);
 		fclose(db_file);
 		return 1;
@@ -47,11 +54,13 @@ int drop_table(int argc, char* argv[]) {
 	TableEntry* target_table = &header.tables[table_index];
 
 	uint32_t current_offset = target_table->first_record_offset;
-	while (current_offset != 0) {
+	while (current_offset != 0)
+	{
 		fseek(db_file, current_offset, SEEK_SET);
 
 		RecordHeader rec_header;
-		if (fread(&rec_header, sizeof(RecordHeader), 1, db_file) != 1) {
+		if (fread(&rec_header, sizeof(RecordHeader), 1, db_file) != 1)
+		{
 			break;
 		}
 
@@ -63,7 +72,8 @@ int drop_table(int argc, char* argv[]) {
 		current_offset = rec_header.next_record_offset;
 	}
 
-	for (uint32_t i = (uint32_t)table_index; i < header.table_count - 1; i++) {
+	for (uint32_t i = (uint32_t)table_index; i < header.table_count - 1; i++)
+	{
 		header.tables[i] = header.tables[i + 1];
 	}
 

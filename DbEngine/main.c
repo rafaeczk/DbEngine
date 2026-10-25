@@ -15,61 +15,76 @@
 #include "print_help.h"
 #include "init.h"
 
-int main(int argc, char *argv[]) {
-    // HELP
+int main(int argc, char* argv[])
+{
+	// HELP
 
-    if (_stricmp(argv[1], "help") == 0) {
-        print_help(NULL);
-        return 0;
-    }
+	if (_stricmp(argv[1], "help") == 0)
+	{
+		print_help(NULL);
+		return 0;
+	}
 
-    // INIT
+	// INIT
 
-    if (init(argc, argv) != 0) {
-        return 1;
-    }
+	if (init(argc, argv) != 0)
+	{
+		return 1;
+	}
 
-    // WRITE
+	// WRITE
 
-    if (_stricmp(argv[1], "create-table") == 0) {
-        if (create_table(argc, argv) != 0) {
-            return 1;
-        }
-    }
+	if (_stricmp(argv[1], "create-table") == 0)
+	{
+		if (create_table(argc, argv) != 0)
+		{
+			return 1;
+		}
+	}
 
-    if (_stricmp(argv[1], "drop-table") == 0) {
-        if (drop_table(argc, argv) != 0) {
-            return 1;
-        }
-    }
+	if (_stricmp(argv[1], "drop-table") == 0)
+	{
+		if (drop_table(argc, argv) != 0)
+		{
+			return 1;
+		}
+	}
 
-    if (_stricmp(argv[1], "insert-into") == 0) {
-        if (insert_into(argc, argv) != 0) {
-            return 1;
-        }
-    }
+	if (_stricmp(argv[1], "insert-into") == 0)
+	{
+		if (insert_into(argc, argv) != 0)
+		{
+			return 1;
+		}
+	}
 
-    // DELETE
+	// DELETE
 
-    if (_stricmp(argv[1], "delete-from") == 0) {
-        if (delete_from(argc, argv) != 0) {
-            return 1;
-        }
-    }
+	if (_stricmp(argv[1], "delete-from") == 0)
+	{
+		if (delete_from(argc, argv) != 0)
+		{
+			return 1;
+		}
+	}
 
-    // READ
+	// READ
 
-    if (_stricmp(argv[1], "show-tables") == 0) {
-        if (show_tables(argc, argv) != 0) {
-            return 1;
-        }
-    }
+	if (_stricmp(argv[1], "show-tables") == 0)
+	{
+		if (show_tables(argc, argv) != 0)
+		{
+			return 1;
+		}
+	}
 
-    if (_stricmp(argv[1], "select-from") == 0) {
-        if (select_from(argc, argv) != 0) {
-            return 1;
-        }
-    }
+	if (_stricmp(argv[1], "select-from") == 0)
+	{
+		if (select_from(argc, argv) != 0)
+		{
+			return 1;
+		}
+	}
 
-    return 0;
+	return 0;
 }
