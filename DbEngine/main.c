@@ -19,7 +19,7 @@ int main(int argc, char* argv[])
 {
 	// HELP
 
-	if (_stricmp(argv[1], "help") == 0)
+	if (_stricmp(argv[2], "help") == 0)
 	{
 		print_help(NULL);
 		return 0;
@@ -34,7 +34,7 @@ int main(int argc, char* argv[])
 
 	// WRITE
 
-	if (_stricmp(argv[1], "create-table") == 0)
+	if (_stricmp(argv[2], "create-table") == 0)
 	{
 		if (create_table(argc, argv) != 0)
 		{
@@ -42,7 +42,7 @@ int main(int argc, char* argv[])
 		}
 	}
 
-	if (_stricmp(argv[1], "drop-table") == 0)
+	if (_stricmp(argv[2], "drop-table") == 0)
 	{
 		if (drop_table(argc, argv) != 0)
 		{
@@ -50,7 +50,7 @@ int main(int argc, char* argv[])
 		}
 	}
 
-	if (_stricmp(argv[1], "insert-into") == 0)
+	if (_stricmp(argv[2], "insert-into") == 0)
 	{
 		if (insert_into(argc, argv) != 0)
 		{
@@ -60,7 +60,7 @@ int main(int argc, char* argv[])
 
 	// DELETE
 
-	if (_stricmp(argv[1], "delete-from") == 0)
+	if (_stricmp(argv[2], "delete-from") == 0)
 	{
 		if (delete_from(argc, argv) != 0)
 		{
@@ -70,7 +70,7 @@ int main(int argc, char* argv[])
 
 	// READ
 
-	if (_stricmp(argv[1], "show-tables") == 0)
+	if (_stricmp(argv[2], "show-tables") == 0)
 	{
 		if (show_tables(argc, argv) != 0)
 		{
@@ -78,7 +78,7 @@ int main(int argc, char* argv[])
 		}
 	}
 
-	if (_stricmp(argv[1], "select-from") == 0)
+	if (_stricmp(argv[2], "select-from") == 0)
 	{
 		if (select_from(argc, argv) != 0)
 		{
