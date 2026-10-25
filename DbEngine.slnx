@@ -1,0 +1,7 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="DbEngine/DbEngine.vcxproj" Id="1dc191ef-9d8c-444c-b0f0-659f0f1d25c6" />
+</Solution>
