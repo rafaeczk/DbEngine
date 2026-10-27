@@ -7,6 +7,8 @@
 #include "insert_into.h"
 #include "structures.h"
 #include "print_help.h"
+#include "type_validator.h"
+#include "data_type_to_string.h"
 
 int insert_into(int argc, char* argv[])
 {
@@ -100,14 +102,26 @@ int insert_into(int argc, char* argv[])
 			Column* col = &target_table->columns[col_idx];
 			char* field_ptr = payload_buffers[i] + byte_offset;
 
+			char* col_type_str = data_type_to_string(col->type);
+
 			if (col->type == TYPE_INT)
 			{
-				int32_t val = (int32_t)atoi(val_token);
+				int32_t val;
+				if (!is_valid_int(val_token, &val))
+				{
+					fprintf(stderr, "Blad: Niepoprawny typ! Podano \"%s\" do kolumny typu %s.\n", val_token, col_type_str);
+					return 1;
+				}
 				memcpy(field_ptr, &val, sizeof(int32_t));
 			}
 			else if (col->type == TYPE_FLOAT)
 			{
-				float val = (float)atof(val_token);
+				float val;
+				if (!is_valid_float(val_token, &val))
+				{
+					fprintf(stderr, "Blad: Niepoprawny typ! Podano \"%s\" do kolumny typu %s.\n", val_token, col_type_str);
+					return 1;
+				}
 				memcpy(field_ptr, &val, sizeof(float));
 			}
 			else if (col->type == TYPE_STRING)
