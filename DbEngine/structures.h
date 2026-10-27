@@ -14,9 +14,9 @@ typedef enum
 
 typedef struct
 {
-	char name[16];
+	char name[MAX_COL_NAME];
 	DataType type;
-	uint16_t size;      // rozmiar w bajtach
+	uint16_t size;
 } Column;
 
 typedef struct
@@ -26,7 +26,7 @@ typedef struct
 	uint32_t last_record_offset;
 	uint32_t record_count;
 	uint16_t column_count;
-	Column columns[8];
+	Column columns[MAX_COLUMNS];
 } TableEntry;
 
 typedef struct
@@ -39,7 +39,7 @@ typedef struct
 
 typedef struct
 {
-	uint8_t is_deleted;       // 0x00 - aktywny, 0x01 - usunięty
+	uint8_t is_deleted;
 	uint32_t next_record_offset;
 	uint32_t payload_size;
 } RecordHeader;

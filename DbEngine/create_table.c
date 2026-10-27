@@ -21,9 +21,15 @@ int create_table(int argc, char* argv[])
 	const char* db_filename = argv[1];
 	const char* table_name = argv[3];
 
-	if (strlen(table_name) > MAX_TABLE_NAME)
+	if (strlen(table_name) >= MAX_TABLE_NAME)
 	{
 		fprintf(stderr, "Blad: Nazwa tabeli '%s' jest za dluga (max %d znakow)!\n", table_name, MAX_TABLE_NAME - 1);
+		return 1;
+	}
+
+	if (strlen(argv[4]) >= 256)
+	{
+		fprintf(stderr, "Blad: Definicja schematu kolumn jest za dluga (max 255 znakow)!\n");
 		return 1;
 	}
 
@@ -51,10 +57,11 @@ int create_table(int argc, char* argv[])
 
 		char* field_name = strtok_s(field, type_separator, &type_context);
 		char* field_type = strtok_s(NULL, type_separator, &type_context);
+		char* extra = strtok_s(NULL, type_separator, &type_context);
 
-		if (!field_name || !field_type)
+		if (!field_name || !field_type || extra != NULL)
 		{
-			fprintf(stderr, "Blad: Niepoprawny format kolumny '%s'. Oczekiwano 'nazwa:TYP'\n", field);
+			fprintf(stderr, "Blad: Niepoprawny format kolumny '%s'. Oczekiwano 'nazwa:TYP'\n", field ? field : "");
 			return 1;
 		}
 
@@ -62,6 +69,15 @@ int create_table(int argc, char* argv[])
 		{
 			fprintf(stderr, "Blad: Nazwa kolumny '%s' jest za dluga (max %d znakow)!\n", field_name, MAX_COL_NAME - 1);
 			return 1;
+		}
+
+		for (uint16_t i = 0; i < column_count; i++)
+		{
+			if (_stricmp(columns[i].name, field_name) == 0)
+			{
+				fprintf(stderr, "Blad: Zduplikowana nazwa kolumny '%s'!\n", field_name);
+				return 1;
+			}
 		}
 
 		Column* col = &columns[column_count];
@@ -100,7 +116,12 @@ int create_table(int argc, char* argv[])
 	}
 
 	FILE* db_file = NULL;
-	fopen_s(&db_file, db_filename, "rb+");
+	errno_t err = fopen_s(&db_file, db_filename, "rb+");
+	if (err != 0 || db_file == NULL)
+	{
+		fprintf(stderr, "Blad: Nie mozna otworzyc pliku bazy danych '%s'!\n", db_filename);
+		return 1;
+	}
 
 	DBHeader header;
 	if (fread(&header, sizeof(DBHeader), 1, db_file) != 1 || header.magic != DB_MAGIC)
@@ -139,9 +160,14 @@ int create_table(int argc, char* argv[])
 
 	header.table_count++;
 
-	// Nadpisujemy nagłówek na początku pliku
 	fseek(db_file, 0, SEEK_SET);
-	fwrite(&header, sizeof(DBHeader), 1, db_file);
+	if (fwrite(&header, sizeof(DBHeader), 1, db_file) != 1)
+	{
+		fprintf(stderr, "Blad: Zapis naglowka bazy danych do pliku '%s' nie powiodl sie!\n", db_filename);
+		fclose(db_file);
+		return 1;
+	}
+
 	fflush(db_file);
 	fclose(db_file);
 
