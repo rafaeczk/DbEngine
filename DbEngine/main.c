@@ -78,7 +78,7 @@ int main(int argc, char* argv[])
 		}
 	}
 
-	if (_stricmp(argv[2], "select-from") == 0)
+	if (_stricmp(argv[2], "select") == 0)
 	{
 		if (select_from(argc, argv) != 0)
 		{

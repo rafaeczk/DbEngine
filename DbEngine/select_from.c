@@ -11,15 +11,16 @@
 
 int select_from(int argc, char* argv[])
 {
-	if (argc != 4)
+	if (argc < 6 || _stricmp(argv[4], "from") != 0)
 	{
-		fprintf(stderr, "Blad: Niepoprawna liczba argumentow!\n");
+		fprintf(stderr, "Blad: Niepoprawne argumenty!\n");
 		print_help(argv[2]);
 		return 1;
 	}
 
 	const char* db_filename = argv[1];
-	const char* table_name = argv[3];
+	const char* requested_fields_str = argv[3];
+	const char* table_name = argv[5];
 
 	FILE* db_file = NULL;
 	fopen_s(&db_file, db_filename, "rb+");
@@ -56,9 +57,11 @@ int select_from(int argc, char* argv[])
 
 	TableEntry* target_table = &header.tables[table_index];
 
+	uint32_t column_offsets[MAX_COLUMNS];
 	uint32_t item_payload_size = 0;
 	for (uint16_t i = 0; i < target_table->column_count; i++)
 	{
+		column_offsets[i] = item_payload_size;
 		item_payload_size += target_table->columns[i].size;
 	}
 
@@ -70,16 +73,77 @@ int select_from(int argc, char* argv[])
 		return 1;
 	}
 
+	Column** requested_fields = (Column**)malloc(sizeof(Column*) * MAX_COLUMNS);
+	uint32_t* requested_field_offsets = (uint32_t*)malloc(sizeof(uint32_t) * MAX_COLUMNS);
+	if (!requested_fields || !requested_field_offsets)
+	{
+		fprintf(stderr, "Blad alokacji pamieci dla requested_fields!\n");
+		free(requested_fields);
+		free(requested_field_offsets);
+		free(item_buffer);
+		fclose(db_file);
+		return 1;
+	}
+	int requested_fields_count = 0;
+
+	char requested_fields_copy[512];
+	strncpy_s(requested_fields_copy, sizeof(requested_fields_copy), requested_fields_str, _TRUNCATE);
+
+	char* requested_field_context = NULL;
+	char requested_field_separator[] = ",";
+	char* requested_field_token = strtok_s(requested_fields_copy, requested_field_separator, &requested_field_context);
+
+	while (requested_field_token != NULL)
+	{
+		if (requested_fields_count >= MAX_COLUMNS)
+		{
+			fprintf(stderr, "Blad: Przekroczono maksymalna liczbe kolumn w zapytaniu!\n");
+			free(requested_fields);
+			free(requested_field_offsets);
+			free(item_buffer);
+			fclose(db_file);
+			return 1;
+		}
+
+		Column* col = NULL;
+		uint32_t offset = 0;
+		for (int i = 0; i < target_table->column_count; i++)
+		{
+			if (_stricmp(requested_field_token, target_table->columns[i].name) == 0)
+			{
+				col = &target_table->columns[i];
+				offset = column_offsets[i];
+				break;
+			}
+		}
+
+		if (col == NULL)
+		{
+			fprintf(stderr, "Blad: Nie znaleziono pola '%s' w tabeli %s!\n", requested_field_token, table_name);
+			free(requested_fields);
+			free(requested_field_offsets);
+			free(item_buffer);
+			fclose(db_file);
+			return 1;
+		}
+
+		requested_fields[requested_fields_count] = col;
+		requested_field_offsets[requested_fields_count] = offset;
+		requested_fields_count++;
+		requested_field_token = strtok_s(NULL, requested_field_separator, &requested_field_context);
+	}
+
 	printf("\n--- Tabela: %s (Rekordow: %u) ---\n", target_table->name, target_table->record_count);
 
 	printf("     ");
-	for (uint16_t i = 0; i < target_table->column_count; i++)
+	for (int j = 0; j < requested_fields_count; j++)
 	{
-		printf("%-15s", target_table->columns[i].name);
+		printf("%-15s", requested_fields[j]->name);
 	}
 	printf("\n");
 
-	for (uint16_t i = 0; i < target_table->column_count; i++)
+	printf("-----");
+	for (int j = 0; j < requested_fields_count; j++)
 	{
 		printf("---------------");
 	}
@@ -105,14 +169,12 @@ int select_from(int argc, char* argv[])
 
 		if (!rec_header.is_deleted)
 		{
-			uint32_t byte_offset = 0;
-
 			printf("%-5d", index);
 
-			for (uint16_t i = 0; i < target_table->column_count; i++)
+			for (int j = 0; j < requested_fields_count; j++)
 			{
-				Column* col = &target_table->columns[i];
-				char* field_ptr = item_buffer + byte_offset;
+				Column* col = requested_fields[j];
+				char* field_ptr = item_buffer + requested_field_offsets[j];
 
 				if (col->type == TYPE_INT)
 				{
@@ -126,10 +188,8 @@ int select_from(int argc, char* argv[])
 				}
 				else if (col->type == TYPE_STRING)
 				{
-					printf("%-15s", field_ptr);
+					printf("%-15.*s", (int)col->size, field_ptr);
 				}
-
-				byte_offset += col->size;
 			}
 			printf("\n");
 			index++;
@@ -140,6 +200,8 @@ int select_from(int argc, char* argv[])
 
 	printf("\n");
 
+	free(requested_fields);
+	free(requested_field_offsets);
 	free(item_buffer);
 	fclose(db_file);
 	return 0;

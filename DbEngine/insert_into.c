@@ -109,7 +109,7 @@ int insert_into(int argc, char* argv[])
 				int32_t val;
 				if (!is_valid_int(val_token, &val))
 				{
-					fprintf(stderr, "Blad: Niepoprawny typ! Podano \"%s\" do kolumny typu %s.\n", val_token, col_type_str);
+					fprintf(stderr, "Blad: Niepoprawny typ! Podano '%s' do kolumny typu %s.\n", val_token, col_type_str);
 					return 1;
 				}
 				memcpy(field_ptr, &val, sizeof(int32_t));
@@ -119,7 +119,7 @@ int insert_into(int argc, char* argv[])
 				float val;
 				if (!is_valid_float(val_token, &val))
 				{
-					fprintf(stderr, "Blad: Niepoprawny typ! Podano \"%s\" do kolumny typu %s.\n", val_token, col_type_str);
+					fprintf(stderr, "Blad: Niepoprawny typ! Podano '%s' do kolumny typu %s.\n", val_token, col_type_str);
 					return 1;
 				}
 				memcpy(field_ptr, &val, sizeof(float));

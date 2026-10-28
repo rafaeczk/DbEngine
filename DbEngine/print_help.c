@@ -24,11 +24,11 @@ void print_help(const char* command)
 			printf(" - wartosci     : Wartości po przecinku w kolejnosci kolumn w schemacie.\n");
 			printf(" Przyklad       : mydb.db insert-into uzytkownicy Jan,25,1500.50\n");
 		}
-		else if (_stricmp(command, "select-from") == 0)
+		else if (_stricmp(command, "select") == 0)
 		{
-			printf(" Uzycie dla: select-from\n");
-			printf("   <db_file> select-from <nazwa_tabeli>\n\n");
-			printf(" Opis           : Wyswietla wszystkie aktywne rekordy z tabeli.\n");
+			printf(" Uzycie dla: select\n");
+			printf("   <db_file> select <pole1,pole2,...> from <nazwa_tabeli> [where pole1=wartosc1,...]\n\n");
+			printf(" Opis           : Wyswietla aktywne rekordy z tabeli.\n");
 			printf(" Przyklad       : mydb.db select-from uzytkownicy\n");
 		}
 		else if (_stricmp(command, "delete-from") == 0)
