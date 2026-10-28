@@ -27,7 +27,7 @@ void print_help(const char* command)
 		else if (_stricmp(command, "select") == 0)
 		{
 			printf(" Uzycie dla: select\n");
-			printf("   <db_file> select <pole1,pole2,...> from <nazwa_tabeli> [where pole1=wartosc1,...]\n\n");
+			printf("   <db_file> select <pole1,pole2,...> from <nazwa_tabeli> [where:pole1=wartosc1,...]\n\n");
 			printf(" Opis           : Wyswietla aktywne rekordy z tabeli.\n");
 			printf(" Przyklad       : mydb.db select-from uzytkownicy\n");
 		}

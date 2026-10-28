@@ -22,6 +22,9 @@ int select_from(int argc, char* argv[])
 	const char* requested_fields_str = argv[3];
 	const char* table_name = argv[5];
 
+
+	// ============= open file and read header =============
+
 	FILE* db_file = NULL;
 	fopen_s(&db_file, db_filename, "rb+");
 	if (!db_file)
@@ -57,20 +60,14 @@ int select_from(int argc, char* argv[])
 
 	TableEntry* target_table = &header.tables[table_index];
 
+	// ============= store requested field offsets =============
+
 	uint32_t column_offsets[MAX_COLUMNS];
 	uint32_t item_payload_size = 0;
 	for (uint16_t i = 0; i < target_table->column_count; i++)
 	{
 		column_offsets[i] = item_payload_size;
 		item_payload_size += target_table->columns[i].size;
-	}
-
-	char* item_buffer = (char*)calloc(1, item_payload_size);
-	if (!item_buffer)
-	{
-		fprintf(stderr, "Blad alokacji pamieci bufora!\n");
-		fclose(db_file);
-		return 1;
 	}
 
 	Column** requested_fields = (Column**)malloc(sizeof(Column*) * MAX_COLUMNS);
@@ -80,10 +77,12 @@ int select_from(int argc, char* argv[])
 		fprintf(stderr, "Blad alokacji pamieci dla requested_fields!\n");
 		free(requested_fields);
 		free(requested_field_offsets);
-		free(item_buffer);
 		fclose(db_file);
 		return 1;
 	}
+
+	// ============= prarse requested fields =============
+
 	int requested_fields_count = 0;
 
 	char requested_fields_copy[512];
@@ -100,7 +99,6 @@ int select_from(int argc, char* argv[])
 			fprintf(stderr, "Blad: Przekroczono maksymalna liczbe kolumn w zapytaniu!\n");
 			free(requested_fields);
 			free(requested_field_offsets);
-			free(item_buffer);
 			fclose(db_file);
 			return 1;
 		}
@@ -122,7 +120,6 @@ int select_from(int argc, char* argv[])
 			fprintf(stderr, "Blad: Nie znaleziono pola '%s' w tabeli %s!\n", requested_field_token, table_name);
 			free(requested_fields);
 			free(requested_field_offsets);
-			free(item_buffer);
 			fclose(db_file);
 			return 1;
 		}
@@ -132,6 +129,8 @@ int select_from(int argc, char* argv[])
 		requested_fields_count++;
 		requested_field_token = strtok_s(NULL, requested_field_separator, &requested_field_context);
 	}
+
+	// ============= print header =============
 
 	printf("\n--- Tabela: %s (Rekordow: %u) ---\n", target_table->name, target_table->record_count);
 
@@ -149,8 +148,18 @@ int select_from(int argc, char* argv[])
 	}
 	printf("\n");
 
+	// ============= print items =============
+
 	uint32_t current_offset = target_table->first_record_offset;
 	int index = 1;
+
+	char* item_buffer = (char*)calloc(1, item_payload_size);
+	if (!item_buffer)
+	{
+		fprintf(stderr, "Blad alokacji pamieci bufora!\n");
+		fclose(db_file);
+		return 1;
+	}
 
 	while (current_offset != 0)
 	{
