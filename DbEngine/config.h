@@ -1,6 +1,6 @@
 #pragma once
 
-#define DB_MAGIC 0x4D594442 // "MYDB"
+#define DB_MAGIC 0x656E69676E456244ULL
 
 #define MAX_TABLE_NAME 32
 #define MAX_TABLES 16

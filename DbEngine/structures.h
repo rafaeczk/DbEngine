@@ -31,7 +31,7 @@ typedef struct
 
 typedef struct
 {
-	uint32_t magic;
+	uint64_t magic;
 	uint16_t version;
 	uint32_t table_count;
 	TableEntry tables[MAX_TABLES];
