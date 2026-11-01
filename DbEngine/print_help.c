@@ -45,6 +45,13 @@ void print_help(const char* command)
 			printf(" Opis           : Usuwa tabele wraz z rekordami z naglowka bazy.\n");
 			printf(" Przyklad       : mydb.db drop-table uzytkownicy\n");
 		}
+		else if (_stricmp(command, "vacuum") == 0)
+		{
+			printf(" Uzycie dla: vacuum\n");
+			printf("   <db_file> vacuum\n\n");
+			printf(" Opis           : Kompaktuje baze danych, trwale usuwajac skasowane rekordy i zmniejszajac rozmiar pliku.\n");
+			printf(" Przyklad       : mydb.db vacuum\n");
+		}
 		else
 		{
 			printf(" Nieznana komenda: '%s'\n\n", command);
@@ -60,9 +67,10 @@ void print_help(const char* command)
 		printf(" Dostepne komendy:\n");
 		printf("   create-table <nazwa_tabeli> <pola>\n");
 		printf("   insert-into  <nazwa_tabeli> <wartosci>\n");
-		printf("   select-from  <nazwa_tabeli>\n");
+		printf("   select       <pola> from <nazwa_tabeli>\n");
 		printf("   delete-from  <nazwa_tabeli> <numer_wiersza>\n");
 		printf("   drop-table   <nazwa_tabeli>\n");
+		printf("   vacuum\n");
 		printf("   help         [nazwa_komendy]\n");
 	}
 

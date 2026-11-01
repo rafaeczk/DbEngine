@@ -12,11 +12,19 @@
 #include "insert_into.h"
 #include "select_from.h"
 #include "delete_from.h"
+#include "vacuum.h"
 #include "print_help.h"
 #include "init.h"
 
 int main(int argc, char* argv[])
 {
+	if (argc < 3)
+	{
+		fprintf(stderr, "Blad: Za malo argumentow!\n");
+		print_help(NULL);
+		return 1;
+	}
+
 	// HELP
 
 	if (_stricmp(argv[2], "help") == 0)
@@ -63,6 +71,16 @@ int main(int argc, char* argv[])
 	if (_stricmp(argv[2], "delete-from") == 0)
 	{
 		if (delete_from(argc, argv) != 0)
+		{
+			return 1;
+		}
+	}
+
+	// MAINTENANCE
+
+	if (_stricmp(argv[2], "vacuum") == 0)
+	{
+		if (vacuum(argc, argv) != 0)
 		{
 			return 1;
 		}

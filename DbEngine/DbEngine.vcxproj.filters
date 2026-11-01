@@ -27,6 +27,9 @@
     <ClCompile Include="init.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="vacuum.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="show_tables.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -66,6 +69,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="init.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="vacuum.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="show_tables.h">
