@@ -171,6 +171,6 @@ int create_table(int argc, char* argv[])
 	fflush(db_file);
 	fclose(db_file);
 
-	printf("Utworzono tabele '%s' (%u kolumn) w bazie '%s'.\n", table_name, column_count, db_filename);
+	printf("\nUtworzono tabele '%s' (%u kolumn) w bazie '%s'.\n\n", table_name, column_count, db_filename);
 	return 0;
 }

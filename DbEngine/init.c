@@ -19,7 +19,7 @@ int init(int argc, char* argv[])
 		fopen_s(&db_file, db_filename, "wb+");
 		if (!db_file)
 		{
-			perror("Blad: Nie mozna utworzyc ani otworzyc pliku bazy");
+			fprintf(stderr, "Blad: Nie mozna utworzyc ani otworzyc pliku bazy '%s'!\n", db_filename);
 			return 1;
 		}
 
@@ -31,7 +31,7 @@ int init(int argc, char* argv[])
 
 		fwrite(&header, sizeof(DBHeader), 1, db_file);
 		fflush(db_file);
-		printf("Inicjalizacja nowej bazy danych: %s\n", db_filename);
+		printf("\nInicjalizacja nowej bazy danych: %s\n\n", db_filename);
 	}
 	else
 	{

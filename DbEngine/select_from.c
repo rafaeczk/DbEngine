@@ -79,7 +79,7 @@ int select_from(int argc, char* argv[])
 	requested_field_offsets = (uint32_t*)malloc(sizeof(uint32_t) * MAX_COLUMNS);
 	if (!requested_fields || !requested_field_offsets)
 	{
-		fprintf(stderr, "Blad alokacji pamieci dla requested_fields!\n");
+		fprintf(stderr, "Blad: Nie udalo sie zaalokowac pamieci dla requested_fields!\n");
 		goto cleanup;
 	}
 
@@ -131,7 +131,7 @@ int select_from(int argc, char* argv[])
 	conditions = (Condition*)malloc(MAX_COLUMNS * sizeof(Condition));
 	if (!conditions)
 	{
-		fprintf(stderr, "Blad alokacji pamieci dla conditions!\n");
+		fprintf(stderr, "Blad: Nie udalo sie zaalokowac pamieci dla conditions!\n");
 		goto cleanup;
 	}
 
@@ -225,7 +225,7 @@ int select_from(int argc, char* argv[])
 
 	printf("\n--- Tabela: %s (Rekordow: %u) ---\n", target_table->name, target_table->record_count);
 
-	printf("     ");
+	printf("LP   ");
 	for (int j = 0; j < requested_fields_count; j++)
 	{
 		printf("%-15s", requested_fields[j]->name);
@@ -247,7 +247,7 @@ int select_from(int argc, char* argv[])
 	item_buffer = (char*)calloc(1, item_payload_size);
 	if (!item_buffer)
 	{
-		fprintf(stderr, "Blad alokacji pamieci bufora!\n");
+		fprintf(stderr, "Blad: Nie udalo sie zaalokowac pamieci bufora!\n");
 		goto cleanup;
 	}
 

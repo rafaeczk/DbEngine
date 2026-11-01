@@ -4,7 +4,7 @@
 
 void print_help(const char* command)
 {
-	printf("=================================== POMOC ===================================\n");
+	printf("\n=================================== POMOC ===================================\n");
 
 	if (command != NULL)
 	{
@@ -21,7 +21,7 @@ void print_help(const char* command)
 		{
 			printf(" Uzycie dla: insert-into\n");
 			printf("   <db_file> insert-into <nazwa_tabeli> <wartosc1,wartosc2...> <wartosc3,wartosc4, ...> ...\n\n");
-			printf(" - wartosci     : Wartości po przecinku w kolejnosci kolumn w schemacie.\n");
+			printf(" - wartosci     : Wartosci po przecinku w kolejnosci kolumn w schemacie.\n");
 			printf(" Przyklad       : mydb.db insert-into uzytkownicy Jan,25,1500.50\n");
 		}
 		else if (_stricmp(command, "select") == 0)
@@ -66,5 +66,5 @@ void print_help(const char* command)
 		printf("   help         [nazwa_komendy]\n");
 	}
 
-	printf("=============================================================================\n");
+	printf("=============================================================================\n\n");
 }

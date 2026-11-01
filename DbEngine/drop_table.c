@@ -5,6 +5,7 @@
 #include "print_help.h"
 
 #include <stdio.h>
+#include <string.h>
 
 int drop_table(int argc, char* argv[])
 {
@@ -85,6 +86,6 @@ int drop_table(int argc, char* argv[])
 	fflush(db_file);
 	fclose(db_file);
 
-	printf("Tabela '%s' oraz jej rekordy zostaly usuniete z bazy '%s'.\n", table_name, db_filename);
+	printf("\nTabela '%s' oraz jej rekordy zostaly usuniete z bazy '%s'.\n\n", table_name, db_filename);
 	return 0;
 }

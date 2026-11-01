@@ -61,7 +61,7 @@ int delete_from(int argc, char* argv[])
 	uint32_t* offsets_to_delete = (uint32_t*)calloc(records_count_to_delete, sizeof(uint32_t));
 	if (!offsets_to_delete)
 	{
-		fprintf(stderr, "Blad alokacji pamieci!\n");
+		fprintf(stderr, "Blad: Nie udalo sie zaalokowac pamieci!\n");
 		fclose(db_file);
 		return 1;
 	}
@@ -131,7 +131,7 @@ int delete_from(int argc, char* argv[])
 	fflush(db_file);
 	fclose(db_file);
 
-	printf("Pomyslnie usunieto %d z %d rekord(ow) z tabeli '%s'.\n", deleted_records_count, records_count_to_delete, table_name);
+	printf("\nPomyslnie usunieto %d z %d rekord(ow) z tabeli '%s'.\n\n", deleted_records_count, records_count_to_delete, table_name);
 
 	return 0;
 }

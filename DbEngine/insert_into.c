@@ -68,7 +68,7 @@ int insert_into(int argc, char* argv[])
 	char** payload_buffers = (char**)malloc(sizeof(char*) * records_count_to_insert);
 	if (!payload_buffers)
 	{
-		fprintf(stderr, "Blad alokacji pamieci!\n");
+		fprintf(stderr, "Blad: Nie udalo sie zaalokowac pamieci!\n");
 		fclose(db_file);
 		return 1;
 	}
@@ -102,7 +102,7 @@ int insert_into(int argc, char* argv[])
 			Column* col = &target_table->columns[col_idx];
 			char* field_ptr = payload_buffers[i] + byte_offset;
 
-			char* col_type_str = data_type_to_string(col->type);
+			const char* col_type_str = data_type_to_string(col->type);
 
 			if (col->type == TYPE_INT)
 			{
@@ -182,6 +182,6 @@ int insert_into(int argc, char* argv[])
 	fflush(db_file);
 	fclose(db_file);
 
-	printf("Pomyslnie dodano %d rekord(ow) do tabeli '%s'.\n", records_count_to_insert, table_name);
+	printf("\nPomyslnie dodano %d rekord(ow) do tabeli '%s'.\n\n", records_count_to_insert, table_name);
 	return 0;
 }
