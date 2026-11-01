@@ -1,40 +1,43 @@
+#include "delete_from.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
 #include <stddef.h>
 
-#include "delete_from.h"
 #include "structures.h"
 #include "config.h"
 #include "print_help.h"
 
 int delete_from(int argc, char* argv[])
 {
+	int status = 1;
+	FILE* db_file = NULL;
+	uint32_t* offsets_to_delete = NULL;
+
 	if (argc < 5)
 	{
 		fprintf(stderr, "Blad: Niepoprawna liczba argumentow!\n");
 		print_help(argv[2]);
-		return 1;
+		goto cleanup;
 	}
 
 	const char* db_filename = argv[1];
 	const char* table_name = argv[3];
 
-	FILE* db_file = NULL;
 	fopen_s(&db_file, db_filename, "rb+");
 	if (!db_file)
 	{
 		fprintf(stderr, "Blad: Nie mozna otworzyc pliku bazy '%s'!\n", db_filename);
-		return 1;
+		goto cleanup;
 	}
 
 	DBHeader header;
 	if (fread(&header, sizeof(DBHeader), 1, db_file) != 1 || header.magic != DB_MAGIC)
 	{
 		fprintf(stderr, "Blad: Niepoprawny plik bazy danych!\n");
-		fclose(db_file);
-		return 1;
+		goto cleanup;
 	}
 
 	int table_index = -1;
@@ -50,20 +53,18 @@ int delete_from(int argc, char* argv[])
 	if (table_index == -1)
 	{
 		fprintf(stderr, "Blad: Tabela '%s' nie istnieje w bazie!\n", table_name);
-		fclose(db_file);
-		return 1;
+		goto cleanup;
 	}
 
 	TableEntry* target_table = &header.tables[table_index];
 
 	int records_count_to_delete = argc - 4;
 
-	uint32_t* offsets_to_delete = (uint32_t*)calloc(records_count_to_delete, sizeof(uint32_t));
+	offsets_to_delete = (uint32_t*)calloc(records_count_to_delete, sizeof(uint32_t));
 	if (!offsets_to_delete)
 	{
 		fprintf(stderr, "Blad: Nie udalo sie zaalokowac pamieci!\n");
-		fclose(db_file);
-		return 1;
+		goto cleanup;
 	}
 
 	int deleted_records_count = 0;
@@ -125,13 +126,21 @@ int delete_from(int argc, char* argv[])
 
 	target_table->record_count -= deleted_records_count;
 	fseek(db_file, 0, SEEK_SET);
-	fwrite(&header, sizeof(DBHeader), 1, db_file);
+	if (fwrite(&header, sizeof(DBHeader), 1, db_file) != 1)
+	{
+		fprintf(stderr, "Blad: Zapis naglowka bazy danych nie powiodl sie!\n");
+		goto cleanup;
+	}
 
-	free(offsets_to_delete);
 	fflush(db_file);
-	fclose(db_file);
-
 	printf("\nPomyslnie usunieto %d z %d rekord(ow) z tabeli '%s'.\n\n", deleted_records_count, records_count_to_delete, table_name);
+	status = 0;
 
-	return 0;
+cleanup:
+	free(offsets_to_delete);
+	if (db_file)
+	{
+		fclose(db_file);
+	}
+	return status;
 }

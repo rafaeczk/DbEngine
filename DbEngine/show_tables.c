@@ -1,23 +1,28 @@
 #include "show_tables.h"
 
+#include <stdio.h>
+
 #include "structures.h"
 #include "data_type_to_string.h"
 
-#include <stdio.h>
-
 int show_tables(int argc, char* argv[])
 {
+	int status = 1;
+	FILE* db_file = NULL;
 	const char* db_filename = argv[1];
 
-	FILE* db_file;
-	fopen_s(&db_file, db_filename, "r");
+	fopen_s(&db_file, db_filename, "rb");
+	if (!db_file)
+	{
+		fprintf(stderr, "Blad: Nie mozna otworzyc pliku bazy '%s'!\n", db_filename);
+		goto cleanup;
+	}
 
 	DBHeader header;
 	if (fread(&header, sizeof(DBHeader), 1, db_file) != 1 || header.magic != DB_MAGIC)
 	{
 		fprintf(stderr, "Blad: Wybrany plik '%s' nie jest poprawnym plikiem bazy danych!\n", db_filename);
-		fclose(db_file);
-		return 1;
+		goto cleanup;
 	}
 
 	printf("\n--- Tabele (Liczba tabel: %u) ---\n", header.table_count);
@@ -47,6 +52,12 @@ int show_tables(int argc, char* argv[])
 	}
 
 	printf("\n");
+	status = 0;
 
-	return 0;
+cleanup:
+	if (db_file)
+	{
+		fclose(db_file);
+	}
+	return status;
 }

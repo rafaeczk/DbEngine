@@ -1,10 +1,11 @@
+#include "insert_into.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
 #include <stddef.h>
 
-#include "insert_into.h"
 #include "structures.h"
 #include "print_help.h"
 #include "type_validator.h"
@@ -12,30 +13,33 @@
 
 int insert_into(int argc, char* argv[])
 {
+	int status = 1;
+	FILE* db_file = NULL;
+	char** payload_buffers = NULL;
+	int allocated_payload_count = 0;
+
 	if (argc < 5)
 	{
 		fprintf(stderr, "Blad: Niepoprawna liczba argumentow!\n");
 		print_help(argv[2]);
-		return 1;
+		goto cleanup;
 	}
 
 	const char* db_filename = argv[1];
 	const char* table_name = argv[3];
 
-	FILE* db_file = NULL;
 	fopen_s(&db_file, db_filename, "rb+");
 	if (!db_file)
 	{
 		fprintf(stderr, "Blad: Nie mozna otworzyc pliku bazy '%s'!\n", db_filename);
-		return 1;
+		goto cleanup;
 	}
 
 	DBHeader header;
 	if (fread(&header, sizeof(DBHeader), 1, db_file) != 1 || header.magic != DB_MAGIC)
 	{
 		fprintf(stderr, "Blad: Niepoprawny plik bazy danych!\n");
-		fclose(db_file);
-		return 1;
+		goto cleanup;
 	}
 
 	int table_index = -1;
@@ -51,8 +55,7 @@ int insert_into(int argc, char* argv[])
 	if (table_index == -1)
 	{
 		fprintf(stderr, "Blad: Tabela '%s' nie istnieje w bazie!\n", table_name);
-		fclose(db_file);
-		return 1;
+		goto cleanup;
 	}
 
 	TableEntry* target_table = &header.tables[table_index];
@@ -65,17 +68,23 @@ int insert_into(int argc, char* argv[])
 
 	int records_count_to_insert = argc - 4;
 
-	char** payload_buffers = (char**)malloc(sizeof(char*) * records_count_to_insert);
+	payload_buffers = (char**)calloc(records_count_to_insert, sizeof(char*));
 	if (!payload_buffers)
 	{
 		fprintf(stderr, "Blad: Nie udalo sie zaalokowac pamieci!\n");
-		fclose(db_file);
-		return 1;
+		goto cleanup;
 	}
 
 	for (int i = 0; i < records_count_to_insert; i++)
 	{
 		payload_buffers[i] = (char*)calloc(1, total_payload_size);
+		if (!payload_buffers[i])
+		{
+			fprintf(stderr, "Blad alokacji bufora rekordu!\n");
+			goto cleanup;
+		}
+		allocated_payload_count++;
+
 		const char* raw_values = argv[i + 4];
 
 		char values_copy[512];
@@ -93,10 +102,7 @@ int insert_into(int argc, char* argv[])
 			if (col_idx >= target_table->column_count)
 			{
 				fprintf(stderr, "Blad: Wiersz [%d] ma za duzo kolumn (max %u)!\n", i + 1, target_table->column_count);
-				for (int j = 0; j <= i; j++) free(payload_buffers[j]);
-				free(payload_buffers);
-				fclose(db_file);
-				return 1;
+				goto cleanup;
 			}
 
 			Column* col = &target_table->columns[col_idx];
@@ -110,7 +116,7 @@ int insert_into(int argc, char* argv[])
 				if (!is_valid_int(val_token, &val))
 				{
 					fprintf(stderr, "Blad: Niepoprawny typ! Podano '%s' do kolumny typu %s.\n", val_token, col_type_str);
-					return 1;
+					goto cleanup;
 				}
 				memcpy(field_ptr, &val, sizeof(int32_t));
 			}
@@ -120,7 +126,7 @@ int insert_into(int argc, char* argv[])
 				if (!is_valid_float(val_token, &val))
 				{
 					fprintf(stderr, "Blad: Niepoprawny typ! Podano '%s' do kolumny typu %s.\n", val_token, col_type_str);
-					return 1;
+					goto cleanup;
 				}
 				memcpy(field_ptr, &val, sizeof(float));
 			}
@@ -137,10 +143,7 @@ int insert_into(int argc, char* argv[])
 		if (col_idx < target_table->column_count)
 		{
 			fprintf(stderr, "Blad: Wiersz [%d] ma za malo wartosci (%u z %u kolumn)!\n", i + 1, col_idx, target_table->column_count);
-			for (int j = 0; j <= i; j++) free(payload_buffers[j]);
-			free(payload_buffers);
-			fclose(db_file);
-			return 1;
+			goto cleanup;
 		}
 	}
 
@@ -171,17 +174,31 @@ int insert_into(int argc, char* argv[])
 
 		target_table->last_record_offset = new_record_offset;
 		target_table->record_count++;
-
-		free(payload_buffers[i]);
 	}
 
-	free(payload_buffers);
-
 	fseek(db_file, 0, SEEK_SET);
-	fwrite(&header, sizeof(DBHeader), 1, db_file);
-	fflush(db_file);
-	fclose(db_file);
+	if (fwrite(&header, sizeof(DBHeader), 1, db_file) != 1)
+	{
+		fprintf(stderr, "Blad: Zapis naglowka bazy danych nie powiodl sie!\n");
+		goto cleanup;
+	}
 
+	fflush(db_file);
 	printf("\nPomyslnie dodano %d rekord(ow) do tabeli '%s'.\n\n", records_count_to_insert, table_name);
-	return 0;
+	status = 0;
+
+cleanup:
+	if (payload_buffers)
+	{
+		for (int i = 0; i < allocated_payload_count; i++)
+		{
+			free(payload_buffers[i]);
+		}
+		free(payload_buffers);
+	}
+	if (db_file)
+	{
+		fclose(db_file);
+	}
+	return status;
 }

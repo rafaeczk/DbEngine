@@ -1,38 +1,39 @@
 #include "drop_table.h"
 
+#include <stdio.h>
+#include <string.h>
+
 #include "structures.h"
 #include "config.h"
 #include "print_help.h"
 
-#include <stdio.h>
-#include <string.h>
-
 int drop_table(int argc, char* argv[])
 {
+	int status = 1;
+	FILE* db_file = NULL;
+
 	if (argc != 4)
 	{
 		fprintf(stderr, "Blad: Niepoprawna liczba argumentow!\n");
 		print_help(argv[2]);
-		return 1;
+		goto cleanup;
 	}
 
 	const char* db_filename = argv[1];
 	const char* table_name = argv[3];
 
-	FILE* db_file = NULL;
 	fopen_s(&db_file, db_filename, "rb+");
 	if (!db_file)
 	{
 		fprintf(stderr, "Blad: Nie mozna otworzyc pliku bazy '%s'!\n", db_filename);
-		return 1;
+		goto cleanup;
 	}
 
 	DBHeader header;
 	if (fread(&header, sizeof(DBHeader), 1, db_file) != 1 || header.magic != DB_MAGIC)
 	{
 		fprintf(stderr, "Blad: Niepoprawny plik bazy danych!\n");
-		fclose(db_file);
-		return 1;
+		goto cleanup;
 	}
 
 	int table_index = -1;
@@ -48,8 +49,7 @@ int drop_table(int argc, char* argv[])
 	if (table_index == -1)
 	{
 		fprintf(stderr, "Blad: Tabela '%s' nie istnieje w bazie!\n", table_name);
-		fclose(db_file);
-		return 1;
+		goto cleanup;
 	}
 
 	TableEntry* target_table = &header.tables[table_index];
@@ -82,10 +82,20 @@ int drop_table(int argc, char* argv[])
 	header.table_count--;
 
 	fseek(db_file, 0, SEEK_SET);
-	fwrite(&header, sizeof(DBHeader), 1, db_file);
-	fflush(db_file);
-	fclose(db_file);
+	if (fwrite(&header, sizeof(DBHeader), 1, db_file) != 1)
+	{
+		fprintf(stderr, "Blad: Zapis naglowka bazy danych nie powiodl sie!\n");
+		goto cleanup;
+	}
 
+	fflush(db_file);
 	printf("\nTabela '%s' oraz jej rekordy zostaly usuniete z bazy '%s'.\n\n", table_name, db_filename);
-	return 0;
+	status = 0;
+
+cleanup:
+	if (db_file)
+	{
+		fclose(db_file);
+	}
+	return status;
 }

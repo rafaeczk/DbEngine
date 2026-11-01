@@ -1,17 +1,19 @@
+#include "init.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
 
-#include "init.h"
 #include "config.h"
 #include "structures.h"
 
 int init(int argc, char* argv[])
 {
+	int status = 1;
+	FILE* db_file = NULL;
 	const char* db_filename = argv[1];
 
-	FILE* db_file = NULL;
 	fopen_s(&db_file, db_filename, "rb+");
 
 	if (!db_file)
@@ -20,7 +22,7 @@ int init(int argc, char* argv[])
 		if (!db_file)
 		{
 			fprintf(stderr, "Blad: Nie mozna utworzyc ani otworzyc pliku bazy '%s'!\n", db_filename);
-			return 1;
+			goto cleanup;
 		}
 
 		DBHeader header;
@@ -29,7 +31,12 @@ int init(int argc, char* argv[])
 		header.version = 1;
 		header.table_count = 0;
 
-		fwrite(&header, sizeof(DBHeader), 1, db_file);
+		if (fwrite(&header, sizeof(DBHeader), 1, db_file) != 1)
+		{
+			fprintf(stderr, "Blad: Zapis naglowka bazy danych do pliku '%s' nie powiodl sie!\n", db_filename);
+			goto cleanup;
+		}
+
 		fflush(db_file);
 		printf("\nInicjalizacja nowej bazy danych: %s\n\n", db_filename);
 	}
@@ -39,11 +46,16 @@ int init(int argc, char* argv[])
 		if (fread(&header, sizeof(DBHeader), 1, db_file) != 1 || header.magic != DB_MAGIC)
 		{
 			fprintf(stderr, "Blad: Wybrany plik '%s' nie jest poprawnym plikiem bazy danych!\n", db_filename);
-			fclose(db_file);
-			return 1;
+			goto cleanup;
 		}
 	}
 
-	fclose(db_file);
-	return 0;
+	status = 0;
+
+cleanup:
+	if (db_file)
+	{
+		fclose(db_file);
+	}
+	return status;
 }
