@@ -5,6 +5,7 @@
 
 typedef enum
 {
+	TYPE_INT_AUTO_INC,
 	TYPE_INT,
 	TYPE_FLOAT,
 	TYPE_STRING
@@ -26,6 +27,7 @@ typedef struct
 	uint32_t last_record_offset;
 	uint32_t record_count;
 	uint16_t column_count;
+	uint32_t next_autoincrement_value;
 	Column columns[MAX_COLUMNS];
 } TableEntry;
 

@@ -116,20 +116,17 @@ int parse_conditions(const char* conditions_str, Condition** conditions, int* ou
             cond->condition_type = ConditionTypeSmallerThan; break;
         }
 
-        if (matched_col->type == TYPE_INT)
+        if (matched_col->type == TYPE_INT || matched_col->type == TYPE_INT_AUTO_INC)
         {
             cond->int_val = (int32_t)atoi(field_value);
-            // printf("Int val: %d\n", cond->int_val);
         }
         else if (matched_col->type == TYPE_FLOAT)
         {
             cond->float_val = (float)atof(field_value);
-            // printf("Float val: %f\n", cond->float_val);
         }
         else if (matched_col->type == TYPE_STRING)
         {
             strncpy_s(cond->str_val, sizeof(cond->str_val), field_value, _TRUNCATE);
-            // printf("String val: %s\n", cond->str_val);
         }
 
         conditions_count++;

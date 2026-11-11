@@ -4,6 +4,8 @@ const char* data_type_to_string(DataType data_type)
 {
 	switch (data_type)
 	{
+	case TYPE_INT_AUTO_INC:
+		return "INT_AUTO_INC";
 	case TYPE_INT:
 		return "INT";
 	case TYPE_FLOAT:

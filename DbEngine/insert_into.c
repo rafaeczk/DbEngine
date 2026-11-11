@@ -110,7 +110,31 @@ int insert_into(int argc, char* argv[])
 
 			const char* col_type_str = data_type_to_string(col->type);
 
-			if (col->type == TYPE_INT)
+			if (col->type == TYPE_INT_AUTO_INC)
+			{
+				uint32_t val;
+				if (_stricmp(val_token, "_") == 0)
+				{
+					val = target_table->next_autoincrement_value++;
+				}
+				else if (!is_valid_int(val_token, &val))
+				{
+					fprintf(stderr, "Blad: Niepoprawny typ! Podano '%s' do kolumny typu %s.\n", val_token, col_type_str);
+					goto cleanup;
+				}
+				else if (val < target_table->next_autoincrement_value)
+				{
+					fprintf(stderr, "Blad: Nie mozna podawac nie wiekszej niz najwyzszej dotychczas wartosci do tego pola o typie %s.\n", col_type_str);
+					goto cleanup;
+				}
+				else if (val >= target_table->next_autoincrement_value)
+				{
+					target_table->next_autoincrement_value = val + 1;
+				}
+
+				memcpy(field_ptr, &val, sizeof(uint32_t));
+			}
+			else if (col->type == TYPE_INT)
 			{
 				int32_t val;
 				if (!is_valid_int(val_token, &val))

@@ -12,7 +12,7 @@ int check_conditions(int conditions_count, Condition** conditions, const char* i
         Condition* cond = &((*conditions)[k]);
         const char* field_ptr = item_buffer + cond->offset;
 
-        if (cond->col->type == TYPE_INT)
+        if (cond->col->type == TYPE_INT || cond->col->type == TYPE_INT_AUTO_INC)
         {
             int32_t rec_val = *(int32_t*)field_ptr;
             int condition_met = 1;
@@ -68,7 +68,7 @@ int check_conditions(int conditions_count, Condition** conditions, const char* i
 
             if (condition_met == 0)
             {
-                return 0; // Rekord NIE spełnia warunków
+                return 0;
             }
         }
         else if (cond->col->type == TYPE_STRING)

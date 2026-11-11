@@ -206,7 +206,7 @@ int select_from(int argc, char* argv[])
 				Column* col = requested_fields[j];
 				char* field_ptr = item_buffer + requested_field_offsets[j];
 
-				if (col->type == TYPE_INT)
+				if (col->type == TYPE_INT || col->type == TYPE_INT_AUTO_INC)
 				{
 					int32_t val = *(int32_t*)field_ptr;
 					printf("%-15d", val);

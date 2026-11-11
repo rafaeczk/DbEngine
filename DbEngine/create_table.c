@@ -47,6 +47,8 @@ int create_table(int argc, char* argv[])
 
 	char* field = strtok_s(table_schema, field_separator, &field_context);
 
+	int autoincrement_field_count = 0;
+
 	while (field != NULL)
 	{
 		if (column_count >= MAX_COLUMNS)
@@ -87,7 +89,13 @@ int create_table(int argc, char* argv[])
 		memset(col, 0, sizeof(Column));
 		strncpy_s(col->name, MAX_COL_NAME, field_name, _TRUNCATE);
 
-		if (_stricmp(field_type, "INT") == 0)
+		if (_stricmp(field_type, "INT_AUTO_INC") == 0)
+		{
+			col->type = TYPE_INT_AUTO_INC;
+			col->size = sizeof(int32_t);
+			autoincrement_field_count++;
+		}
+		else if (_stricmp(field_type, "INT") == 0)
 		{
 			col->type = TYPE_INT;
 			col->size = sizeof(int32_t);
@@ -110,6 +118,12 @@ int create_table(int argc, char* argv[])
 
 		column_count++;
 		field = strtok_s(NULL, field_separator, &field_context);
+	}
+
+	if (autoincrement_field_count > 1)
+	{
+		fprintf(stderr, "Blad: Dozwolone max jedno pole typu INT_AUTO_INC!\n");
+		goto cleanup;
 	}
 
 	if (column_count == 0)
@@ -151,6 +165,7 @@ int create_table(int argc, char* argv[])
 	memset(new_table, 0, sizeof(TableEntry));
 	strncpy_s(new_table->name, MAX_TABLE_NAME, table_name, _TRUNCATE);
 	new_table->column_count = column_count;
+	new_table->next_autoincrement_value = 1;
 
 	for (uint16_t i = 0; i < column_count; i++)
 	{
