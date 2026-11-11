@@ -1,8 +1,9 @@
 #include "parse_conditions.h"
-#include "select_from.h"
+
 #include "config.h"
 #include "structures.h"
 #include "print_help.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>

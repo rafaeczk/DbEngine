@@ -4,6 +4,7 @@
 #include "structures.h"
 #include "print_help.h"
 #include "parse_conditions.h"
+#include "check_conditions.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -88,43 +89,55 @@ int select_from(int argc, char* argv[])
 
 	int requested_fields_count = 0;
 
-	char requested_fields_str_copy[512];
-	strncpy_s(requested_fields_str_copy, sizeof(requested_fields_str_copy), requested_fields_str, _TRUNCATE);
-
-	char* requested_field_context = NULL;
-	char requested_field_separator[] = ",";
-	char* requested_field_token = strtok_s(requested_fields_str_copy, requested_field_separator, &requested_field_context);
-
-	while (requested_field_token != NULL)
+	if (_stricmp(requested_fields_str, "*") == 0)
 	{
-		if (requested_fields_count >= MAX_COLUMNS)
-		{
-			fprintf(stderr, "Blad: Przekroczono maksymalna liczbe kolumn w zapytaniu!\n");
-			goto cleanup;
-		}
-
-		Column* col = NULL;
-		uint32_t offset = 0;
 		for (int i = 0; i < target_table->column_count; i++)
 		{
-			if (_stricmp(requested_field_token, target_table->columns[i].name) == 0)
-			{
-				col = &target_table->columns[i];
-				offset = column_offsets[i];
-				break;
-			}
+			requested_fields[i] = &target_table->columns[i];
+			requested_field_offsets[requested_fields_count] = column_offsets[i];
+			requested_fields_count++;
 		}
+	}
+	else
+	{
+		char requested_fields_str_copy[512];
+		strncpy_s(requested_fields_str_copy, sizeof(requested_fields_str_copy), requested_fields_str, _TRUNCATE);
 
-		if (col == NULL)
+		char* requested_field_context = NULL;
+		char requested_field_separator[] = ",";
+		char* requested_field_token = strtok_s(requested_fields_str_copy, requested_field_separator, &requested_field_context);
+
+		while (requested_field_token != NULL)
 		{
-			fprintf(stderr, "Blad: Nie znaleziono pola '%s' w tabeli %s!\n", requested_field_token, table_name);
-			goto cleanup;
-		}
+			if (requested_fields_count >= MAX_COLUMNS)
+			{
+				fprintf(stderr, "Blad: Przekroczono maksymalna liczbe kolumn w zapytaniu!\n");
+				goto cleanup;
+			}
 
-		requested_fields[requested_fields_count] = col;
-		requested_field_offsets[requested_fields_count] = offset;
-		requested_fields_count++;
-		requested_field_token = strtok_s(NULL, requested_field_separator, &requested_field_context);
+			Column* col = NULL;
+			uint32_t offset = 0;
+			for (int i = 0; i < target_table->column_count; i++)
+			{
+				if (_stricmp(requested_field_token, target_table->columns[i].name) == 0)
+				{
+					col = &target_table->columns[i];
+					offset = column_offsets[i];
+					break;
+				}
+			}
+
+			if (col == NULL)
+			{
+				fprintf(stderr, "Blad: Nie znaleziono pola '%s' w tabeli %s!\n", requested_field_token, table_name);
+				goto cleanup;
+			}
+
+			requested_fields[requested_fields_count] = col;
+			requested_field_offsets[requested_fields_count] = offset;
+			requested_fields_count++;
+			requested_field_token = strtok_s(NULL, requested_field_separator, &requested_field_context);
+		}
 	}
 
 	// ============= parse conditions =============
@@ -184,136 +197,32 @@ int select_from(int argc, char* argv[])
 			break;
 		}
 
-		if (!rec_header.is_deleted)
+		if (!rec_header.is_deleted && check_conditions(conditions_count, &conditions, item_buffer))
 		{
-			int matches = 1;
+			printf("%-5d", index);
 
-			for (int k = 0; k < conditions_count; k++)
+			for (int j = 0; j < requested_fields_count; j++)
 			{
-				Condition* cond = &conditions[k];
-				char* field_ptr = item_buffer + cond->offset;
+				Column* col = requested_fields[j];
+				char* field_ptr = item_buffer + requested_field_offsets[j];
 
-				if (cond->col->type == TYPE_INT)
+				if (col->type == TYPE_INT)
 				{
-					int32_t rec_val = *(int32_t*)field_ptr;
-					int condition_met = 1;
-
-					switch (cond->condition_type)
-					{
-					case ConditionTypeEqual:
-						condition_met = rec_val == cond->int_val;
-						break;
-					case ConditionTypeNonEqual:
-						condition_met = rec_val != cond->int_val;
-						break;
-					case ConditionTypeLargerThan:
-						condition_met = rec_val > cond->int_val;
-						break;
-					case ConditionTypeSmallerThan:
-						condition_met = rec_val < cond->int_val;
-						break;
-					default:
-						condition_met = 0;
-						break;
-					}
-
-					if (condition_met == 0)
-					{
-						matches = 0;
-						break;
-					}
+					int32_t val = *(int32_t*)field_ptr;
+					printf("%-15d", val);
 				}
-				else if (cond->col->type == TYPE_FLOAT)
+				else if (col->type == TYPE_FLOAT)
 				{
-					float rec_val = *(float*)field_ptr;
-					int condition_met = 1;
-
-					float eps = 0.0001f;
-
-					switch (cond->condition_type)
-					{
-					case ConditionTypeEqual:
-						condition_met = fabsf(rec_val - cond->float_val) <= eps;
-						break;
-					case ConditionTypeNonEqual:
-						condition_met = fabsf(rec_val - cond->float_val) > eps;
-						break;
-					case ConditionTypeLargerThan:
-						condition_met = (rec_val - cond->float_val > eps);
-						break;
-					case ConditionTypeSmallerThan:
-						condition_met = (cond->float_val - rec_val > eps);
-						break;
-					default:
-						condition_met = 0;
-						break;
-					}
-
-					if (condition_met == 0)
-					{
-						matches = 0;
-						break;
-					}
+					float val = *(float*)field_ptr;
+					printf("%-15.2f", val);
 				}
-				else if (cond->col->type == TYPE_STRING)
+				else if (col->type == TYPE_STRING)
 				{
-					int cmp_result = _strnicmp(field_ptr, cond->str_val, cond->col->size);
-					int condition_met = 1;
-
-					switch (cond->condition_type)
-					{
-					case ConditionTypeEqual:
-						condition_met = (cmp_result == 0);
-						break;
-					case ConditionTypeNonEqual:
-						condition_met = (cmp_result != 0);
-						break;
-					case ConditionTypeLargerThan:
-						condition_met = (cmp_result > 0);
-						break;
-					case ConditionTypeSmallerThan:
-						condition_met = (cmp_result < 0);
-						break;
-					default:
-						condition_met = 0;
-						break;
-					}
-
-					if (!condition_met)
-					{
-						matches = 0;
-						break;
-					}
+					printf("%-15.*s", (int)col->size, field_ptr);
 				}
 			}
-
-			if (matches)
-			{
-				printf("%-5d", index);
-
-				for (int j = 0; j < requested_fields_count; j++)
-				{
-					Column* col = requested_fields[j];
-					char* field_ptr = item_buffer + requested_field_offsets[j];
-
-					if (col->type == TYPE_INT)
-					{
-						int32_t val = *(int32_t*)field_ptr;
-						printf("%-15d", val);
-					}
-					else if (col->type == TYPE_FLOAT)
-					{
-						float val = *(float*)field_ptr;
-						printf("%-15.2f", val);
-					}
-					else if (col->type == TYPE_STRING)
-					{
-						printf("%-15.*s", (int)col->size, field_ptr);
-					}
-				}
-				printf("\n");
-				index++;
-			}
+			printf("\n");
+			index++;
 		}
 
 		current_offset = rec_header.next_record_offset;

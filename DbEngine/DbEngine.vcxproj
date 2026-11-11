@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="check_conditions.c" />
     <ClCompile Include="create_table.c" />
     <ClCompile Include="parse_conditions.c" />
     <ClCompile Include="type_validator.c" />
@@ -34,6 +35,7 @@
     <ClCompile Include="vacuum.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="check_conditions.h" />
     <ClInclude Include="config.h" />
     <ClInclude Include="create_table.h" />
     <ClInclude Include="parse_conditions.h" />
