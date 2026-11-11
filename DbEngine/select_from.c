@@ -244,7 +244,7 @@ int select_from(int argc, char* argv[])
 
 	// ============= print header =============
 
-	printf("\n--- Tabela: %s (Rekordow: %u) ---\n", target_table->name, target_table->record_count);
+	printf("\n--- Tabela: %s ---\n", target_table->name);
 
 	printf("LP   ");
 	for (int j = 0; j < requested_fields_count; j++)
@@ -423,6 +423,11 @@ int select_from(int argc, char* argv[])
 	}
 
 	printf("\n");
+
+	printf("Rekordow %d/%d.\n", index-1, target_table->record_count);
+
+	printf("\n");
+
 	status = 0;
 
 
