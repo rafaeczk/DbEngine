@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="create_table.c" />
+    <ClCompile Include="parse_conditions.c" />
     <ClCompile Include="type_validator.c" />
     <ClCompile Include="data_type_to_string.c" />
     <ClCompile Include="delete_from.c" />
@@ -29,13 +30,13 @@
     <ClCompile Include="main.c" />
     <ClCompile Include="print_help.c" />
     <ClCompile Include="select_from.c" />
-    
     <ClCompile Include="show_tables.c" />
     <ClCompile Include="vacuum.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="config.h" />
     <ClInclude Include="create_table.h" />
+    <ClInclude Include="parse_conditions.h" />
     <ClInclude Include="type_validator.h" />
     <ClInclude Include="data_type_to_string.h" />
     <ClInclude Include="delete_from.h" />

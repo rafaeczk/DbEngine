@@ -3,6 +3,7 @@
 #include "config.h"
 #include "structures.h"
 #include "print_help.h"
+#include "parse_conditions.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -128,117 +129,13 @@ int select_from(int argc, char* argv[])
 
 	// ============= parse conditions =============
 
-	conditions = (Condition*)malloc(MAX_COLUMNS * sizeof(Condition));
-	if (!conditions)
-	{
-		fprintf(stderr, "Blad: Nie udalo sie zaalokowac pamieci dla conditions!\n");
-		goto cleanup;
-	}
-
 	int conditions_count = 0;
 
 	if (argc >= 7)
 	{
-		char* conditions_str = argv[6];
-		const char* conditions_no_where = NULL;
-
-		if (strncmp(conditions_str, "where:", 6) != 0)
+		if (parse_conditions(argv[6], &conditions, &conditions_count, target_table, column_offsets) != 0)
 		{
-			fprintf(stderr, "Blad: Niepoprawne argumenty! Oczekiwano parametru zaczynajacego sie od 'where:'\n");
-			print_help(argv[2]);
 			goto cleanup;
-		}
-		else
-		{
-			conditions_no_where = conditions_str + 6;
-		}
-
-		char conditions_str_copy[512];
-		strncpy_s(conditions_str_copy, sizeof(conditions_str_copy), conditions_no_where, _TRUNCATE);
-
-		char* condition_context = NULL;
-		char condition_separator[] = ",";
-		char* condition_token = strtok_s(conditions_str_copy, condition_separator, &condition_context);
-
-		while (condition_token != NULL)
-		{
-			if (conditions_count >= MAX_COLUMNS)
-			{
-				fprintf(stderr, "Blad: Przekroczono maksymalna liczbe warunkow w zapytaniu!\n");
-				goto cleanup;
-			}
-
-			char condition_type_separator[] = "=!><";
-
-			char* op_ptr = strpbrk(condition_token, condition_type_separator);
-			if (op_ptr == NULL)
-			{
-				fprintf(stderr, "Blad: Brak operatora (=, !, >, <) w warunku.\n");
-				goto cleanup;
-			}
-
-			char operator_char = *op_ptr;
-
-			*op_ptr = '\0';
-
-			char* field_name = condition_token;
-			char* field_value = op_ptr + 1;
-
-			if (*field_name == '\0' || *field_value == '\0')
-			{
-				fprintf(stderr, "Blad: Niepoprawny format warunku (brak nazwy pola lub wartosci).\n");
-				goto cleanup;
-			}
-
-			Column* matched_col = NULL;
-			uint32_t col_offset = 0;
-			for (int i = 0; i < target_table->column_count; i++)
-			{
-				if (_stricmp(target_table->columns[i].name, field_name) == 0)
-				{
-					matched_col = &target_table->columns[i];
-					col_offset = column_offsets[i];
-					break;
-				}
-			}
-
-			if (matched_col == NULL)
-			{
-				fprintf(stderr, "Blad: Niepoprawna nazwa kolumny '%s' w warunku.\n", field_name);
-				goto cleanup;
-			}
-
-			Condition* cond = &conditions[conditions_count];
-			cond->col = matched_col;
-			cond->offset = col_offset;
-
-			switch (operator_char)
-			{
-			case '=':
-				cond->condition_type = ConditionTypeEqual; break;
-			case '!':
-				cond->condition_type = ConditionTypeNonEqual; break;
-			case '>':
-				cond->condition_type = ConditionTypeLargerThan; break;
-			case '<':
-				cond->condition_type = ConditionTypeSmallerThan; break;
-			}
-
-			if (matched_col->type == TYPE_INT)
-			{
-				cond->int_val = (int32_t)atoi(field_value);
-			}
-			else if (matched_col->type == TYPE_FLOAT)
-			{
-				cond->float_val = (float)atof(field_value);
-			}
-			else if (matched_col->type == TYPE_STRING)
-			{
-				strncpy_s(cond->str_val, sizeof(cond->str_val), field_value, _TRUNCATE);
-			}
-
-			conditions_count++;
-			condition_token = strtok_s(NULL, condition_separator, &condition_context);
 		}
 	}
 
