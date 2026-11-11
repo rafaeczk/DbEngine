@@ -5,6 +5,14 @@
 
 int select_from(int argc, char* argv[]);
 
+typedef enum
+{
+	ConditionTypeEqual,
+	ConditionTypeNonEqual,
+	ConditionTypeSmallerThan,
+	ConditionTypeLargerThan
+} ConditionType;
+
 typedef struct
 {
 	Column* col;
@@ -12,4 +20,5 @@ typedef struct
 	int32_t int_val;
 	float float_val;
 	char str_val[256];
+	ConditionType condition_type;
 } Condition;

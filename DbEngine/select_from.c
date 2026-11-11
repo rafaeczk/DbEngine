@@ -168,16 +168,25 @@ int select_from(int argc, char* argv[])
 				goto cleanup;
 			}
 
-			char eq_separator[] = "=";
-			char* eq_context = NULL;
+			char condition_type_separator[] = "=!><";
 
-			char* field_name = strtok_s(condition_token, eq_separator, &eq_context);
-			char* field_value = strtok_s(NULL, eq_separator, &eq_context);
-			char* extra = strtok_s(NULL, eq_separator, &eq_context);
-
-			if (!field_name || !field_value || extra != NULL)
+			char* op_ptr = strpbrk(condition_token, condition_type_separator);
+			if (op_ptr == NULL)
 			{
-				fprintf(stderr, "Blad: Niepoprawny format warunku. Oczekiwano 'pole=wartosc'\n");
+				fprintf(stderr, "Blad: Brak operatora (=, !, >, <) w warunku.\n");
+				goto cleanup;
+			}
+
+			char operator_char = *op_ptr;
+
+			*op_ptr = '\0';
+
+			char* field_name = condition_token;
+			char* field_value = op_ptr + 1;
+
+			if (*field_name == '\0' || *field_value == '\0')
+			{
+				fprintf(stderr, "Blad: Niepoprawny format warunku (brak nazwy pola lub wartosci).\n");
 				goto cleanup;
 			}
 
@@ -202,6 +211,18 @@ int select_from(int argc, char* argv[])
 			Condition* cond = &conditions[conditions_count];
 			cond->col = matched_col;
 			cond->offset = col_offset;
+
+			switch (operator_char)
+			{
+			case '=':
+				cond->condition_type = ConditionTypeEqual; break;
+			case '!':
+				cond->condition_type = ConditionTypeNonEqual; break;
+			case '>':
+				cond->condition_type = ConditionTypeLargerThan; break;
+			case '<':
+				cond->condition_type = ConditionTypeSmallerThan; break;
+			}
 
 			if (matched_col->type == TYPE_INT)
 			{
@@ -278,7 +299,28 @@ int select_from(int argc, char* argv[])
 				if (cond->col->type == TYPE_INT)
 				{
 					int32_t rec_val = *(int32_t*)field_ptr;
-					if (rec_val != cond->int_val)
+					int condition_met = 1;
+
+					switch (cond->condition_type)
+					{
+					case ConditionTypeEqual:
+						condition_met = rec_val == cond->int_val;
+						break;
+					case ConditionTypeNonEqual:
+						condition_met = rec_val != cond->int_val;
+						break;
+					case ConditionTypeLargerThan:
+						condition_met = rec_val > cond->int_val;
+						break;
+					case ConditionTypeSmallerThan:
+						condition_met = rec_val < cond->int_val;
+						break;
+					default:
+						condition_met = 0;
+						break;
+					}
+
+					if (condition_met == 0)
 					{
 						matches = 0;
 						break;
@@ -287,7 +329,30 @@ int select_from(int argc, char* argv[])
 				else if (cond->col->type == TYPE_FLOAT)
 				{
 					float rec_val = *(float*)field_ptr;
-					if (fabsf(rec_val - cond->float_val) > 0.0001f)
+					int condition_met = 1;
+
+					float eps = 0.0001f;
+
+					switch (cond->condition_type)
+					{
+					case ConditionTypeEqual:
+						condition_met = fabsf(rec_val - cond->float_val) <= eps;
+						break;
+					case ConditionTypeNonEqual:
+						condition_met = fabsf(rec_val - cond->float_val) > eps;
+						break;
+					case ConditionTypeLargerThan:
+						condition_met = (rec_val - cond->float_val > eps);
+						break;
+					case ConditionTypeSmallerThan:
+						condition_met = (cond->float_val - rec_val > eps);
+						break;
+					default:
+						condition_met = 0;
+						break;
+					}
+
+					if (condition_met == 0)
 					{
 						matches = 0;
 						break;
@@ -295,7 +360,29 @@ int select_from(int argc, char* argv[])
 				}
 				else if (cond->col->type == TYPE_STRING)
 				{
-					if (_strnicmp(field_ptr, cond->str_val, cond->col->size) != 0)
+					int cmp_result = _strnicmp(field_ptr, cond->str_val, cond->col->size);
+					int condition_met = 1;
+
+					switch (cond->condition_type)
+					{
+					case ConditionTypeEqual:
+						condition_met = (cmp_result == 0);
+						break;
+					case ConditionTypeNonEqual:
+						condition_met = (cmp_result != 0);
+						break;
+					case ConditionTypeLargerThan:
+						condition_met = (cmp_result > 0);
+						break;
+					case ConditionTypeSmallerThan:
+						condition_met = (cmp_result < 0);
+						break;
+					default:
+						condition_met = 0;
+						break;
+					}
+
+					if (!condition_met)
 					{
 						matches = 0;
 						break;
