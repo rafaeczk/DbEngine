@@ -67,7 +67,7 @@ int select_from(int argc, char* argv[])
 
 	TableEntry* target_table = &header.tables[table_index];
 
-	// ============= store requested field offsets =============
+	// ============= store field offsets =============
 
 	uint32_t column_offsets[MAX_COLUMNS];
 	uint32_t item_payload_size = 0;
@@ -77,6 +77,8 @@ int select_from(int argc, char* argv[])
 		item_payload_size += target_table->columns[i].size;
 	}
 
+	// ============= parse requested fields =============
+
 	requested_fields = (Column**)malloc(sizeof(Column*) * MAX_COLUMNS);
 	requested_field_offsets = (uint32_t*)malloc(sizeof(uint32_t) * MAX_COLUMNS);
 	if (!requested_fields || !requested_field_offsets)
@@ -84,8 +86,6 @@ int select_from(int argc, char* argv[])
 		fprintf(stderr, "Blad: Nie udalo sie zaalokowac pamieci dla requested_fields!\n");
 		goto cleanup;
 	}
-
-	// ============= parse requested fields =============
 
 	int requested_fields_count = 0;
 
@@ -230,7 +230,8 @@ int select_from(int argc, char* argv[])
 
 	printf("\n");
 
-	printf("Rekordow %d/%d.\n", index-1, target_table->record_count);
+	printf("Zwrocono rekordow: %d.\n", index-1);
+	printf("Wszystkich rekordow: %d.\n", target_table->record_count);
 
 	printf("\n");
 

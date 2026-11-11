@@ -2,7 +2,6 @@
 
 #include "config.h"
 #include "structures.h"
-#include "print_help.h"
 
 #include <stdio.h>
 #include <stdlib.h>
