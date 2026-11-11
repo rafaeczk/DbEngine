@@ -27,9 +27,9 @@ int main(int argc, char* argv[])
 
 	// HELP
 
-	if (_stricmp(argv[2], "help") == 0)
+	if (_stricmp(argv[1], "help") == 0)
 	{
-		print_help(NULL);
+		print_help(argv[2] ? argv[2] : NULL);
 		return 0;
 	}
 
