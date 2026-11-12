@@ -5,7 +5,7 @@
 #include <math.h>
 #include <string.h>
 
-int check_conditions(int conditions_count, Condition** conditions, const char* item_buffer)
+int check_conditions(int conditions_count, Condition** conditions, char* item_buffer)
 {
     for (int k = 0; k < conditions_count; k++)
     {

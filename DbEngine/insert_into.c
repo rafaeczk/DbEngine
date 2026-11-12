@@ -112,7 +112,7 @@ int insert_into(int argc, char* argv[])
 
 			if (col->type == TYPE_INT_AUTO_INC)
 			{
-				uint32_t val;
+				int32_t val;
 				if (_stricmp(val_token, "_") == 0)
 				{
 					val = target_table->next_autoincrement_value++;
@@ -131,8 +131,8 @@ int insert_into(int argc, char* argv[])
 				{
 					target_table->next_autoincrement_value = val + 1;
 				}
-
-				memcpy(field_ptr, &val, sizeof(uint32_t));
+				uint32_t uval = (uint32_t)val;
+				memcpy(field_ptr, &uval, sizeof(uint32_t));
 			}
 			else if (col->type == TYPE_INT)
 			{

@@ -1,0 +1,3 @@
+
+#command for compilation on termux
+clang -include ./DbEngine/windows.h ./DbEngine/*.c -o exe
