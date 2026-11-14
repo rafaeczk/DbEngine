@@ -20,7 +20,7 @@ int delete_from(int argc, char* argv[])
 	Condition* conditions = NULL;
 	char* item_buffer = NULL;
 
-	if (argc != 6)
+	if (argc != 5)
 	{
 		fprintf(stderr, "Blad: Niepoprawna liczba argumentow!\n");
 		print_help(argv[2]);
@@ -29,8 +29,7 @@ int delete_from(int argc, char* argv[])
 
 	const char* db_filename = argv[1];
 	const char* table_name = argv[3];
-	const char* record_to_delete_count_str = argv[4];
-	const char* conditions_str = argv[5];
+	const char* conditions_str = argv[4];
 
 	
 	// ============= open file and read header =============
@@ -92,21 +91,7 @@ int delete_from(int argc, char* argv[])
 
 	// ============= seek rows meeting conditions =============
 
-	int record_to_delete_count = atoi(record_to_delete_count_str);
-
-	if (record_to_delete_count <= 0)
-	{
-		fprintf(stderr, "Blad: Liczba rekordow do usuniecia musi byc wieksza od zera!\n");
-		goto cleanup;
-	}
-
-	offsets_to_delete = (uint32_t*)calloc(record_to_delete_count, sizeof(uint32_t));
-	if (!offsets_to_delete)
-	{
-		fprintf(stderr, "Blad: Nie udalo sie zaalokowac pamieci!\n");
-		goto cleanup;
-	}
-
+	int record_to_delete_count = 0;
 	int deleted_records_count = 0;
 
 	uint32_t current_offset = target_table->first_record_offset;
@@ -118,7 +103,7 @@ int delete_from(int argc, char* argv[])
 		goto cleanup;
 	}
 
-	while (current_offset != 0 && deleted_records_count < record_to_delete_count)
+	while (current_offset != 0)
 	{
 		fseek(db_file, current_offset, SEEK_SET);
 
@@ -135,6 +120,15 @@ int delete_from(int argc, char* argv[])
 
 		if (!rec_header.is_deleted && check_conditions(conditions_count, &conditions, item_buffer))
 		{
+			record_to_delete_count++;
+			uint32_t* temp = (uint32_t*)realloc(offsets_to_delete, record_to_delete_count * sizeof(uint32_t));
+			if (!temp)
+			{
+				fprintf(stderr, "Blad: Nie udalo sie zaalokowac pamieci!\n");
+				goto cleanup;
+			}
+			offsets_to_delete = temp;
+
 			offsets_to_delete[deleted_records_count] = current_offset;
 
 			deleted_records_count++;
