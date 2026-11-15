@@ -99,10 +99,10 @@ int select_from(int argc, char* argv[])
 			if (requested_fields[i] == NULL)
 			{
 				fprintf(stderr, "Blad: Nie udalo sie zaalokowac pamieci!\n");
-				return;
+				goto cleanup;
 			}
 			
-			strcpy_s(requested_fields[i]->name, MAX_COL_NAME, target_table->columns[i].name);
+			strncpy_s(requested_fields[i]->name, MAX_COL_NAME, target_table->columns[i].name, _TRUNCATE);
 			requested_fields[i]->size = target_table->columns[i].size;
 			requested_fields[i]->type = target_table->columns[i].type;
 			requested_fields[i]->function_type = FunctionType_None;
@@ -169,9 +169,9 @@ int select_from(int argc, char* argv[])
 			if (field == NULL)
 			{
 				fprintf(stderr, "Blad: Nie udalo sie zaalokowac pamieci!\n");
-				return;
+				goto cleanup;
 			}
-			strcpy_s(field->name, MAX_COL_NAME, col->name);
+			strncpy_s(field->name, MAX_COL_NAME, col->name, _TRUNCATE);
 			field->size = col->size;
 			field->type = col->type;
 			field->function_type = functionType;

@@ -91,7 +91,7 @@ int check_conditions(int conditions_count, Condition** conditions, char* item_bu
                 condition_met = (cmp_result < 0);
                 break;
             case ConditionType_In:
-                condition_met = strstr(field_ptr, cond->str_val);
+                condition_met = strstr(field_ptr, cond->str_val) != NULL;
                 break;
             default:
                 condition_met = 0;

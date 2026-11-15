@@ -1,4 +1,4 @@
-#include "function_type_to_str.h";
+#include "function_type_to_str.h"
 
 char* function_type_to_str(FunctionType function_type)
 {
