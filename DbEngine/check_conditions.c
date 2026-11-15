@@ -19,16 +19,16 @@ int check_conditions(int conditions_count, Condition** conditions, char* item_bu
 
             switch (cond->condition_type)
             {
-            case ConditionTypeEqual:
+            case ConditionType_Equal:
                 condition_met = (rec_val == cond->int_val);
                 break;
-            case ConditionTypeNonEqual:
+            case ConditionType_NonEqual:
                 condition_met = (rec_val != cond->int_val);
                 break;
-            case ConditionTypeLargerThan:
+            case ConditionType_LargerThan:
                 condition_met = (rec_val > cond->int_val);
                 break;
-            case ConditionTypeSmallerThan:
+            case ConditionType_SmallerThan:
                 condition_met = (rec_val < cond->int_val);
                 break;
             default:
@@ -49,16 +49,16 @@ int check_conditions(int conditions_count, Condition** conditions, char* item_bu
 
             switch (cond->condition_type)
             {
-            case ConditionTypeEqual:
+            case ConditionType_Equal:
                 condition_met = (fabsf(rec_val - cond->float_val) <= eps);
                 break;
-            case ConditionTypeNonEqual:
+            case ConditionType_NonEqual:
                 condition_met = (fabsf(rec_val - cond->float_val) > eps);
                 break;
-            case ConditionTypeLargerThan:
+            case ConditionType_LargerThan:
                 condition_met = (rec_val - cond->float_val > eps);
                 break;
-            case ConditionTypeSmallerThan:
+            case ConditionType_SmallerThan:
                 condition_met = (cond->float_val - rec_val > eps);
                 break;
             default:
@@ -78,16 +78,16 @@ int check_conditions(int conditions_count, Condition** conditions, char* item_bu
 
             switch (cond->condition_type)
             {
-            case ConditionTypeEqual:
+            case ConditionType_Equal:
                 condition_met = (cmp_result == 0);
                 break;
-            case ConditionTypeNonEqual:
+            case ConditionType_NonEqual:
                 condition_met = (cmp_result != 0);
                 break;
-            case ConditionTypeLargerThan:
+            case ConditionType_LargerThan:
                 condition_met = (cmp_result > 0);
                 break;
-            case ConditionTypeSmallerThan:
+            case ConditionType_SmallerThan:
                 condition_met = (cmp_result < 0);
                 break;
             default:

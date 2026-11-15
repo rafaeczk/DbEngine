@@ -5,6 +5,8 @@
 #include "print_help.h"
 #include "parse_conditions.h"
 #include "check_conditions.h"
+#include "str_to_function_type.h"
+#include "function_type_to_str.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -17,7 +19,7 @@ int select_from(int argc, char* argv[])
 	int status = 1;
 
 	FILE* db_file = NULL;
-	Column** requested_fields = NULL;
+	SelectField** requested_fields = NULL;
 	uint32_t* requested_field_offsets = NULL;
 	Condition* conditions = NULL;
 	char* item_buffer = NULL;
@@ -79,7 +81,7 @@ int select_from(int argc, char* argv[])
 
 	// ============= parse requested fields =============
 
-	requested_fields = (Column**)malloc(sizeof(Column*) * MAX_COLUMNS);
+	requested_fields = (SelectField**)malloc(sizeof(SelectField*) * MAX_COLUMNS);
 	requested_field_offsets = (uint32_t*)malloc(sizeof(uint32_t) * MAX_COLUMNS);
 	if (!requested_fields || !requested_field_offsets)
 	{
@@ -93,7 +95,18 @@ int select_from(int argc, char* argv[])
 	{
 		for (int i = 0; i < target_table->column_count; i++)
 		{
-			requested_fields[i] = &target_table->columns[i];
+			requested_fields[i] = malloc(sizeof(SelectField));
+			if (requested_fields[i] == NULL)
+			{
+				fprintf(stderr, "Blad: Nie udalo sie zaalokowac pamieci!\n");
+				return;
+			}
+			
+			strcpy_s(requested_fields[i]->name, MAX_COL_NAME, target_table->columns[i].name);
+			requested_fields[i]->size = target_table->columns[i].size;
+			requested_fields[i]->type = target_table->columns[i].type;
+			requested_fields[i]->function_type = FunctionType_None;
+
 			requested_field_offsets[requested_fields_count] = column_offsets[i];
 			requested_fields_count++;
 		}
@@ -115,11 +128,30 @@ int select_from(int argc, char* argv[])
 				goto cleanup;
 			}
 
+			char* r_f_function_context = NULL;
+			char r_f_function_separator[] = ":";
+			char* r_f_function_token1 = strtok_s(requested_field_token, r_f_function_separator, &r_f_function_context);
+			char* r_f_function_token2 = strtok_s(NULL, r_f_function_separator, &r_f_function_context);
+
+			char* function_name = NULL;
+			char* field_name = NULL;
+			if (r_f_function_token2 == NULL)
+			{
+				field_name = r_f_function_token1;
+			}
+			else
+			{
+				function_name = r_f_function_token1;
+				field_name = r_f_function_token2;
+			}
+
+			FunctionType functionType = str_to_function_type(function_name);
+
 			Column* col = NULL;
 			uint32_t offset = 0;
 			for (int i = 0; i < target_table->column_count; i++)
 			{
-				if (_stricmp(requested_field_token, target_table->columns[i].name) == 0)
+				if (_stricmp(field_name, target_table->columns[i].name) == 0)
 				{
 					col = &target_table->columns[i];
 					offset = column_offsets[i];
@@ -133,7 +165,22 @@ int select_from(int argc, char* argv[])
 				goto cleanup;
 			}
 
-			requested_fields[requested_fields_count] = col;
+			SelectField* field = calloc(1, sizeof(SelectField));
+			if (field == NULL)
+			{
+				fprintf(stderr, "Blad: Nie udalo sie zaalokowac pamieci!\n");
+				return;
+			}
+			strcpy_s(field->name, MAX_COL_NAME, col->name);
+			field->size = col->size;
+			field->type = col->type;
+			field->function_type = functionType;
+			field->float_temp = 0.0f;
+			field->int_temp = 0;
+			field->uint_temp = 0;
+
+			requested_fields[requested_fields_count] = field;
+
 			requested_field_offsets[requested_fields_count] = offset;
 			requested_fields_count++;
 			requested_field_token = strtok_s(NULL, requested_field_separator, &requested_field_context);
@@ -159,7 +206,19 @@ int select_from(int argc, char* argv[])
 	printf("LP   ");
 	for (int j = 0; j < requested_fields_count; j++)
 	{
-		printf("%-15s", requested_fields[j]->name);
+		char header_buf[32];
+		if (requested_fields[j]->function_type == FunctionType_None)
+		{
+			snprintf(header_buf, sizeof(header_buf), "%s", requested_fields[j]->name);
+		}
+		else
+		{
+			snprintf(header_buf, sizeof(header_buf), "%s:%s",
+				function_type_to_str(requested_fields[j]->function_type),
+				requested_fields[j]->name);
+		}
+
+		printf("%-15s", header_buf);
 	}
 	printf("\n");
 
@@ -196,29 +255,151 @@ int select_from(int argc, char* argv[])
 		{
 			break;
 		}
-
 		if (!rec_header.is_deleted && check_conditions(conditions_count, &conditions, item_buffer))
 		{
 			printf("%-5d", index);
 
 			for (int j = 0; j < requested_fields_count; j++)
 			{
-				Column* col = requested_fields[j];
+				SelectField* field = requested_fields[j];
 				char* field_ptr = item_buffer + requested_field_offsets[j];
 
-				if (col->type == TYPE_INT || col->type == TYPE_INT_AUTO_INC)
+				// match every function type
+
+				if (field->function_type == FunctionType_None)
 				{
-					int32_t val = *(int32_t*)field_ptr;
-					printf("%-15d", val);
+					if (field->type == TYPE_INT)
+					{
+						int32_t val = *(int32_t*)field_ptr;
+						printf("%-15d", val);
+					}
+					else if (field->type == TYPE_INT_AUTO_INC)
+					{
+						uint32_t val = *(uint32_t*)field_ptr;
+						printf("%-15u", val);
+					}
+					else if (field->type == TYPE_FLOAT)
+					{
+						float val = *(float*)field_ptr;
+						printf("%-15.2f", val);
+					}
+					else if (field->type == TYPE_STRING)
+					{
+						printf("%-15.*s", (int)field->size, field_ptr);
+					}
 				}
-				else if (col->type == TYPE_FLOAT)
+
+				if (field->function_type == FunctionType_Max)
 				{
-					float val = *(float*)field_ptr;
-					printf("%-15.2f", val);
+					if (field->type == TYPE_INT)
+					{
+						int32_t val = *(int32_t*)field_ptr;
+						if (index == 1)
+							field->int_temp = val;
+						if (val > field->int_temp)
+							field->int_temp = val;
+						printf("%-15d", field->int_temp);
+					}
+					else if (field->type == TYPE_INT_AUTO_INC)
+					{
+						uint32_t val = *(uint32_t*)field_ptr;
+						if (index == 1)
+							field->uint_temp = val;
+						if (val > field->uint_temp)
+							field->uint_temp = val;
+						printf("%-15u", field->uint_temp);
+					}
+					else if (field->type == TYPE_FLOAT)
+					{
+						float val = *(float*)field_ptr;
+						if (index == 1)
+							field->float_temp = val;
+						if (val > field->float_temp)
+							field->float_temp = val;
+						printf("%-15.2f", field->float_temp);
+					}
 				}
-				else if (col->type == TYPE_STRING)
+
+				if (field->function_type == FunctionType_Min)
 				{
-					printf("%-15.*s", (int)col->size, field_ptr);
+					if (field->type == TYPE_INT)
+					{
+						int32_t val = *(int32_t*)field_ptr;
+						if (index == 1)
+							field->int_temp = val;
+						if (val < field->int_temp)
+							field->int_temp = val;
+						printf("%-15d", field->int_temp);
+					}
+					else if (field->type == TYPE_INT_AUTO_INC)
+					{
+						uint32_t val = *(uint32_t*)field_ptr;
+						if (index == 1)
+							field->uint_temp = val;
+						if (val < field->uint_temp)
+							field->uint_temp = val;
+						printf("%-15u", field->uint_temp);
+					}
+					else if (field->type == TYPE_FLOAT)
+					{
+						float val = *(float*)field_ptr;
+						if (index == 1)
+							field->float_temp = val;
+						if (val < field->float_temp)
+							field->float_temp = val;
+						printf("%-15.2f", field->float_temp);
+					}
+				}
+
+				if (field->function_type == FunctionType_Avg)
+				{
+					float avg;
+					if (field->type == TYPE_INT)
+					{
+						int32_t val = *(int32_t*)field_ptr;
+						field->counter++;
+						field->int_temp += val;
+						avg = (float)field->int_temp / field->counter;
+						printf("%-15.2f", avg);
+					}
+					else if (field->type == TYPE_INT_AUTO_INC)
+					{
+						uint32_t val = *(uint32_t*)field_ptr;
+						field->counter++;
+						field->uint_temp += val;
+						avg = (float)field->uint_temp / field->counter;
+						printf("%-15.2f", avg);
+					}
+					else if (field->type == TYPE_FLOAT)
+					{
+						float val = *(float*)field_ptr;
+						field->counter++;
+						field->float_temp += val;
+						avg = (float)field->float_temp / field->counter;
+						printf("%-15.2f", avg);
+					}
+				}
+
+				if (field->function_type == FunctionType_Sum)
+				{
+					if (field->type == TYPE_INT)
+					{
+						int32_t val = *(int32_t*)field_ptr;
+						field->int_temp += val;
+						printf("%-15d", field->int_temp);
+					}
+					else if (field->type == TYPE_INT_AUTO_INC)
+					{
+						uint32_t val = *(uint32_t*)field_ptr;
+						field->uint_temp += val;
+						printf("%-15u", field->uint_temp);
+					}
+					else if (field->type == TYPE_FLOAT)
+					{
+						float val = *(float*)field_ptr;
+						field->float_temp += val;
+						printf("%-15.2f", field->float_temp);
+					}
 				}
 			}
 			printf("\n");

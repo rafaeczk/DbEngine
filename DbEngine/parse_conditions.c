@@ -107,13 +107,13 @@ int parse_conditions(const char* conditions_str, Condition** conditions, int* ou
         switch (operator_char)
         {
         case '=':
-            cond->condition_type = ConditionTypeEqual; break;
+            cond->condition_type = ConditionType_Equal; break;
         case '!':
-            cond->condition_type = ConditionTypeNonEqual; break;
+            cond->condition_type = ConditionType_NonEqual; break;
         case '>':
-            cond->condition_type = ConditionTypeLargerThan; break;
+            cond->condition_type = ConditionType_LargerThan; break;
         case '<':
-            cond->condition_type = ConditionTypeSmallerThan; break;
+            cond->condition_type = ConditionType_SmallerThan; break;
         }
 
         if (matched_col->type == TYPE_INT || matched_col->type == TYPE_INT_AUTO_INC)

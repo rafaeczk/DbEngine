@@ -50,10 +50,10 @@ typedef struct
 
 typedef enum
 {
-	ConditionTypeEqual,
-	ConditionTypeNonEqual,
-	ConditionTypeSmallerThan,
-	ConditionTypeLargerThan
+	ConditionType_Equal,
+	ConditionType_NonEqual,
+	ConditionType_SmallerThan,
+	ConditionType_LargerThan
 } ConditionType;
 
 typedef struct
@@ -65,3 +65,24 @@ typedef struct
 	char str_val[256];
 	ConditionType condition_type;
 } Condition;
+
+typedef enum
+{
+	FunctionType_None,
+	FunctionType_Sum,
+	FunctionType_Avg,
+	FunctionType_Min,
+	FunctionType_Max
+} FunctionType;
+
+typedef struct
+{
+	char name[MAX_COL_NAME];
+	DataType type;
+	uint16_t size;
+	FunctionType function_type;
+	uint32_t uint_temp;
+	int32_t int_temp;
+	float float_temp;
+	uint32_t counter;
+} SelectField;

@@ -39,9 +39,6 @@
     <ClCompile Include="insert_into.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="select_from.h">
-      <Filter>Header Files</Filter>
-    </ClCompile>
     <ClCompile Include="select_from.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -52,6 +49,21 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="print_help.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="check_conditions.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="parse_conditions.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="str_to_function_type.h">
+      <Filter>Header Files</Filter>
+    </ClCompile>
+    <ClCompile Include="str_to_function_type.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="function_type_to_str.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -90,6 +102,18 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="print_help.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="check_conditions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="parse_conditions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="select_from.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="function_type_to_str.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
