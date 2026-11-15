@@ -31,10 +31,12 @@ void print_help(const char* command)
 			printf(" Uzycie dla: select\n");
 			printf("   <db_file> select <pole1,pole2,...|*> from <nazwa_tabeli> [where:pole1<op>wartosc1,...]\n\n");
 			printf(" - pola         : Nazwy kolumn rozdzielone przecinkami lub '*' dla wszystkich kolumn.\n");
-			printf(" - operatory    : =, !, >, < (np. where:wiek>18,imie=Jan)\n");
+			printf("   przed nazwa pola mozna wywolac funkcje, obliczana na biezaca z uwzglednieniem kolejnych rekordow.\n");
+			printf("   Dostepne funkcje: max, min, avg, sum.\n");
+			printf(" - operatory    : =, !, >, <, ~ (np. where:wiek>18,imie=Jan,produkty~suszarka)\n");
 			printf(" Opis           : Wyswietla aktywne rekordy z tabeli spelniajace warunki.\n");
 			printf(" Przyklad 1     : mydb.db select * from uzytkownicy\n");
-			printf(" Przyklad 2     : mydb.db select imie,saldo from uzytkownicy where:wiek>18\n");
+			printf(" Przyklad 2     : mydb.db select imie,saldo,avg:saldo from uzytkownicy where:wiek>18\n");
 		}
 		else if (_stricmp(command, "delete-from") == 0)
 		{

@@ -53,7 +53,8 @@ typedef enum
 	ConditionType_Equal,
 	ConditionType_NonEqual,
 	ConditionType_SmallerThan,
-	ConditionType_LargerThan
+	ConditionType_LargerThan,
+	ConditionType_In
 } ConditionType;
 
 typedef struct

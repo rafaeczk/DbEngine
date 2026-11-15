@@ -56,11 +56,11 @@ int parse_conditions(const char* conditions_str, Condition** conditions, int* ou
             return 1;
         }
 
-        char condition_type_separator[] = "=!><";
+        char condition_type_separator[] = "=!><~";
         char* op_ptr = strpbrk(condition_token, condition_type_separator);
         if (op_ptr == NULL)
         {
-            fprintf(stderr, "Blad: Brak operatora (=, !, >, <) w warunku.\n");
+            fprintf(stderr, "Blad: Brak operatora (=, !, >, <, ~) w warunku.\n");
             free(*conditions);
             *conditions = NULL;
             return 1;
@@ -114,6 +114,8 @@ int parse_conditions(const char* conditions_str, Condition** conditions, int* ou
             cond->condition_type = ConditionType_LargerThan; break;
         case '<':
             cond->condition_type = ConditionType_SmallerThan; break;
+        case '~':
+            cond->condition_type = ConditionType_In; break;
         }
 
         if (matched_col->type == TYPE_INT || matched_col->type == TYPE_INT_AUTO_INC)

@@ -90,6 +90,9 @@ int check_conditions(int conditions_count, Condition** conditions, char* item_bu
             case ConditionType_SmallerThan:
                 condition_met = (cmp_result < 0);
                 break;
+            case ConditionType_In:
+                condition_met = strstr(field_ptr, cond->str_val);
+                break;
             default:
                 condition_met = 0;
                 break;
