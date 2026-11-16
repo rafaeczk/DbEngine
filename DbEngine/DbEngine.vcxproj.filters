@@ -66,6 +66,9 @@
     <ClCompile Include="function_type_to_str.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="update.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="create_table.h">
@@ -114,6 +117,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="function_type_to_str.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="update.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

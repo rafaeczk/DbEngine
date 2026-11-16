@@ -12,6 +12,7 @@
 #include "insert_into.h"
 #include "select_from.h"
 #include "delete_from.h"
+#include "update.h"
 #include "vacuum.h"
 #include "print_help.h"
 #include "init.h"
@@ -61,6 +62,14 @@ int main(int argc, char* argv[])
 	if (_stricmp(argv[2], "insert-into") == 0)
 	{
 		if (insert_into(argc, argv) != 0)
+		{
+			return 1;
+		}
+	}
+
+	if (_stricmp(argv[2], "update") == 0)
+	{
+		if (update(argc, argv) != 0)
 		{
 			return 1;
 		}

@@ -35,6 +35,7 @@
     <ClCompile Include="print_help.c" />
     <ClCompile Include="select_from.c" />
     <ClCompile Include="show_tables.c" />
+    <ClCompile Include="update.c" />
     <ClCompile Include="vacuum.c" />
   </ItemGroup>
   <ItemGroup>
@@ -51,6 +52,7 @@
     <ClInclude Include="insert_into.h" />
     <ClInclude Include="print_help.h" />
     <ClInclude Include="show_tables.h" />
+    <ClInclude Include="update.h" />
     <ClInclude Include="vacuum.h" />
     <ClInclude Include="select_from.h" />
     <ClInclude Include="structures.h" />
