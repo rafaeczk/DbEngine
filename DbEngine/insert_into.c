@@ -122,14 +122,14 @@ int insert_into(int argc, char* argv[])
 					fprintf(stderr, "Blad: Niepoprawny typ! Podano '%s' do kolumny typu %s.\n", val_token, col_type_str);
 					goto cleanup;
 				}
-				else if (val < target_table->next_autoincrement_value)
+				else if (val <= 0 || (uint32_t)val < target_table->next_autoincrement_value)
 				{
 					fprintf(stderr, "Blad: Nie mozna podawac nie wiekszej niz najwyzszej dotychczas wartosci do tego pola o typie %s.\n", col_type_str);
 					goto cleanup;
 				}
-				else if (val >= target_table->next_autoincrement_value)
+				else if ((uint32_t)val >= target_table->next_autoincrement_value)
 				{
-					target_table->next_autoincrement_value = val + 1;
+					target_table->next_autoincrement_value = (uint32_t)val + 1;
 				}
 				uint32_t uval = (uint32_t)val;
 				memcpy(field_ptr, &uval, sizeof(uint32_t));

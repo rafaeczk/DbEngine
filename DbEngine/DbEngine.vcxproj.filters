@@ -57,9 +57,6 @@
     <ClCompile Include="parse_conditions.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="str_to_function_type.h">
-      <Filter>Header Files</Filter>
-    </ClCompile>
     <ClCompile Include="str_to_function_type.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -120,6 +117,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="update.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="str_to_function_type.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -19,8 +19,5 @@
 #define strtok_s(str, delim, context) strtok_r((str), (delim), (context))
 #define sprintf_s(buffer, sizeOfBuffer, format, ...) snprintf((buffer), (sizeOfBuffer), (format), __VA_ARGS__)
 
-// Obejście konfliktu typów (const char* vs char*) w check_conditions bez edycji kodu
-#define check_conditions check_conditions_fix
-
 #endif
 

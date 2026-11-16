@@ -19,19 +19,19 @@
 
 int main(int argc, char* argv[])
 {
+	// HELP
+
+	if (argc >= 2 && _stricmp(argv[1], "help") == 0)
+	{
+		print_help(argc >= 3 ? argv[2] : NULL);
+		return 0;
+	}
+
 	if (argc < 3)
 	{
 		fprintf(stderr, "Blad: Za malo argumentow!\n");
 		print_help(NULL);
 		return 1;
-	}
-
-	// HELP
-
-	if (_stricmp(argv[1], "help") == 0)
-	{
-		print_help(argv[2] ? argv[2] : NULL);
-		return 0;
 	}
 
 	// INIT
@@ -45,73 +45,51 @@ int main(int argc, char* argv[])
 
 	if (_stricmp(argv[2], "create-table") == 0)
 	{
-		if (create_table(argc, argv) != 0)
-		{
-			return 1;
-		}
+		return create_table(argc, argv);
 	}
 
 	if (_stricmp(argv[2], "drop-table") == 0)
 	{
-		if (drop_table(argc, argv) != 0)
-		{
-			return 1;
-		}
+		return drop_table(argc, argv);
 	}
 
 	if (_stricmp(argv[2], "insert-into") == 0)
 	{
-		if (insert_into(argc, argv) != 0)
-		{
-			return 1;
-		}
+		return insert_into(argc, argv);
 	}
 
 	if (_stricmp(argv[2], "update") == 0)
 	{
-		if (update(argc, argv) != 0)
-		{
-			return 1;
-		}
+		return update(argc, argv);
 	}
 
 	// DELETE
 
 	if (_stricmp(argv[2], "delete-from") == 0)
 	{
-		if (delete_from(argc, argv) != 0)
-		{
-			return 1;
-		}
+		return delete_from(argc, argv);
 	}
 
 	// MAINTENANCE
 
 	if (_stricmp(argv[2], "vacuum") == 0)
 	{
-		if (vacuum(argc, argv) != 0)
-		{
-			return 1;
-		}
+		return vacuum(argc, argv);
 	}
 
 	// READ
 
 	if (_stricmp(argv[2], "show-tables") == 0)
 	{
-		if (show_tables(argc, argv) != 0)
-		{
-			return 1;
-		}
+		return show_tables(argc, argv);
 	}
 
 	if (_stricmp(argv[2], "select") == 0)
 	{
-		if (select_from(argc, argv) != 0)
-		{
-			return 1;
-		}
+		return select_from(argc, argv);
 	}
 
-	return 0;
+	fprintf(stderr, "Blad: Nieznana komenda '%s'!\n", argv[2]);
+	print_help(NULL);
+	return 1;
 }

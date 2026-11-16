@@ -24,7 +24,6 @@
     <ClCompile Include="function_type_to_str.c" />
     <ClCompile Include="parse_conditions.c" />
     <ClCompile Include="str_to_function_type.c" />
-    <ClCompile Include="str_to_function_type.h" />
     <ClCompile Include="type_validator.c" />
     <ClCompile Include="data_type_to_string.c" />
     <ClCompile Include="delete_from.c" />
@@ -56,6 +55,7 @@
     <ClInclude Include="vacuum.h" />
     <ClInclude Include="select_from.h" />
     <ClInclude Include="structures.h" />
+    <ClInclude Include="str_to_function_type.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>18.0</VCProjectVersion>

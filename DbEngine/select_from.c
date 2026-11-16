@@ -255,7 +255,7 @@ int select_from(int argc, char* argv[])
 		{
 			break;
 		}
-		if (!rec_header.is_deleted && check_conditions(conditions_count, &conditions, item_buffer))
+		if (!rec_header.is_deleted && check_conditions(conditions_count, conditions, item_buffer))
 		{
 			printf("%-5d", index);
 
@@ -422,8 +422,15 @@ int select_from(int argc, char* argv[])
 	// ============= cleanup =============
 
 cleanup:
+	if (requested_fields)
+	{
+		for (int i = 0; i < requested_fields_count; i++)
+		{
+			free(requested_fields[i]);
+		}
+		free(requested_fields);
+	}
 	free(conditions);
-	free(requested_fields);
 	free(requested_field_offsets);
 	free(item_buffer);
 	if (db_file)

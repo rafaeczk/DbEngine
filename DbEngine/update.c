@@ -4,21 +4,28 @@
 #include "print_help.h"
 #include "parse_conditions.h"
 #include "check_conditions.h"
-#include "str_to_function_type.h"
-#include "function_type_to_str.h"
+#include "type_validator.h"
+#include "data_type_to_string.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
-#include <math.h>
+#include <stdbool.h>
+
+typedef struct
+{
+	bool is_updated;
+	int32_t int_val;
+	float float_val;
+	char str_val[256];
+} UpdateValue;
 
 int update(int argc, char* argv[])
 {
 	int status = 1;
 
 	FILE* db_file = NULL;
-	SelectField** requested_fields = NULL;
-	uint32_t* requested_field_offsets = NULL;
 	Condition* conditions = NULL;
 	char* item_buffer = NULL;
 
@@ -79,10 +86,81 @@ int update(int argc, char* argv[])
 	}
 
 	// ============= allocate item buffer once =============
+
 	item_buffer = (char*)calloc(1, item_payload_size);
 	if (!item_buffer)
 	{
 		fprintf(stderr, "Blad: Nie udalo sie zaalokowac pamieci bufora!\n");
+		goto cleanup;
+	}
+
+	// ============= parse and validate update values up-front =============
+
+	UpdateValue update_values[MAX_COLUMNS];
+	memset(update_values, 0, sizeof(update_values));
+
+	char values_copy[512];
+	strncpy_s(values_copy, sizeof(values_copy), raw_values, _TRUNCATE);
+
+	char* val_context = NULL;
+	char val_separator[] = ",";
+	char* val_token = strtok_s(values_copy, val_separator, &val_context);
+	uint16_t col_idx = 0;
+
+	while (val_token != NULL)
+	{
+		if (col_idx >= target_table->column_count)
+		{
+			fprintf(stderr, "Blad: Za duzo wartosci (max %u)!\n", target_table->column_count);
+			goto cleanup;
+		}
+
+		Column* col = &target_table->columns[col_idx];
+		const char* col_type_str = data_type_to_string(col->type);
+
+		if (_stricmp(val_token, "_") != 0)
+		{
+			if (col->type == TYPE_INT_AUTO_INC)
+			{
+				fprintf(stderr, "Blad: Proba recznej zmiany identyfikatora.\n");
+				goto cleanup;
+			}
+			else if (col->type == TYPE_INT)
+			{
+				int32_t val;
+				if (!is_valid_int(val_token, &val))
+				{
+					fprintf(stderr, "Blad: Niepoprawny typ! Podano '%s' do kolumny typu %s.\n", val_token, col_type_str);
+					goto cleanup;
+				}
+				update_values[col_idx].is_updated = true;
+				update_values[col_idx].int_val = val;
+			}
+			else if (col->type == TYPE_FLOAT)
+			{
+				float val;
+				if (!is_valid_float(val_token, &val))
+				{
+					fprintf(stderr, "Blad: Niepoprawny typ! Podano '%s' do kolumny typu %s.\n", val_token, col_type_str);
+					goto cleanup;
+				}
+				update_values[col_idx].is_updated = true;
+				update_values[col_idx].float_val = val;
+			}
+			else if (col->type == TYPE_STRING)
+			{
+				update_values[col_idx].is_updated = true;
+				strncpy_s(update_values[col_idx].str_val, sizeof(update_values[col_idx].str_val), val_token, _TRUNCATE);
+			}
+		}
+
+		col_idx++;
+		val_token = strtok_s(NULL, val_separator, &val_context);
+	}
+
+	if (col_idx < target_table->column_count)
+	{
+		fprintf(stderr, "Blad: Za malo wartosci (%u z %u kolumn)!\n", col_idx, target_table->column_count);
 		goto cleanup;
 	}
 
@@ -117,74 +195,32 @@ int update(int argc, char* argv[])
 
 		if (!rec_header.is_deleted && check_conditions(conditions_count, conditions, item_buffer))
 		{
-			char values_copy[512];
-			strncpy_s(values_copy, sizeof(values_copy), raw_values, _TRUNCATE);
-
-			char* val_context = NULL;
-			char val_separator[] = ",";
-			char* val_token = strtok_s(values_copy, val_separator, &val_context);
-
-			uint32_t byte_offset = 0;
-			uint16_t col_idx = 0;
-
-			while (val_token != NULL)
+			for (uint16_t i = 0; i < target_table->column_count; i++)
 			{
-				if (col_idx >= target_table->column_count)
+				if (!update_values[i].is_updated)
 				{
-					fprintf(stderr, "Blad: Za duzo kolumn (max %u)!\n", target_table->column_count);
-					goto cleanup;
+					continue;
 				}
 
-				Column* col = &target_table->columns[col_idx];
-				char* field_ptr = item_buffer + byte_offset;
-				const char* col_type_str = data_type_to_string(col->type);
+				Column* col = &target_table->columns[i];
+				char* field_ptr = item_buffer + column_offsets[i];
 
-				if (_stricmp(val_token, "_") != 0)
+				if (col->type == TYPE_INT)
 				{
-					if (col->type == TYPE_INT_AUTO_INC)
-					{
-						printf("Blad: Proba recznej zmiany identyfikatora.");
-						goto cleanup;
-					}
-					else if (col->type == TYPE_INT)
-					{
-						int32_t val;
-						if (!is_valid_int(val_token, &val))
-						{
-							fprintf(stderr, "Blad: Niepoprawny typ! Podano '%s' do kolumny typu %s.\n", val_token, col_type_str);
-							goto cleanup;
-						}
-						memcpy(field_ptr, &val, sizeof(int32_t));
-					}
-					else if (col->type == TYPE_FLOAT)
-					{
-						float val;
-						if (!is_valid_float(val_token, &val))
-						{
-							fprintf(stderr, "Blad: Niepoprawny typ! Podano '%s' do kolumny typu %s.\n", val_token, col_type_str);
-							goto cleanup;
-						}
-						memcpy(field_ptr, &val, sizeof(float));
-					}
-					else if (col->type == TYPE_STRING)
-					{
-						strncpy_s(field_ptr, col->size, val_token, _TRUNCATE);
-					}
+					memcpy(field_ptr, &update_values[i].int_val, sizeof(int32_t));
 				}
-
-				col_idx++;
-				byte_offset += col->size;
-				val_token = strtok_s(NULL, val_separator, &val_context);
+				else if (col->type == TYPE_FLOAT)
+				{
+					memcpy(field_ptr, &update_values[i].float_val, sizeof(float));
+				}
+				else if (col->type == TYPE_STRING)
+				{
+					memset(field_ptr, 0, col->size);
+					strncpy_s(field_ptr, col->size, update_values[i].str_val, _TRUNCATE);
+				}
 			}
 
-			if (col_idx < target_table->column_count)
-			{
-				fprintf(stderr, "Blad: Za malo wartosci (%u z %u kolumn)!\n", col_idx, target_table->column_count);
-				goto cleanup;
-			}
-
-			fseek(db_file, current_offset, SEEK_SET);
-			fwrite(&rec_header, sizeof(RecordHeader), 1, db_file);
+			fseek(db_file, current_offset + sizeof(RecordHeader), SEEK_SET);
 			fwrite(item_buffer, item_payload_size, 1, db_file);
 			records_modified++;
 		}
@@ -192,13 +228,16 @@ int update(int argc, char* argv[])
 		current_offset = rec_header.next_record_offset;
 	}
 
-	printf("\nSukces! Zmodyfikowano %d rekordow.", records_modified);
+	fflush(db_file);
+	printf("\nSukces! Zmodyfikowano %d rekordow.\n\n", records_modified);
+
 	status = 0;
+
+
+	// ============= cleanup =============
 
 cleanup:
 	free(conditions);
-	free(requested_fields);
-	free(requested_field_offsets);
 	free(item_buffer);
 	if (db_file)
 	{

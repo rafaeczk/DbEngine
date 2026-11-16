@@ -73,7 +73,12 @@ int check_conditions(int conditions_count, Condition* conditions, char* item_buf
         }
         else if (cond->col->type == TYPE_STRING)
         {
-            int cmp_result = _strnicmp(field_ptr, cond->str_val, cond->col->size);
+            char field_str[256];
+            uint16_t max_len = cond->col->size < sizeof(field_str) - 1 ? cond->col->size : (uint16_t)(sizeof(field_str) - 1);
+            memcpy(field_str, field_ptr, max_len);
+            field_str[max_len] = '\0';
+
+            int cmp_result = _strnicmp(field_str, cond->str_val, cond->col->size);
             int condition_met = 1;
 
             switch (cond->condition_type)
@@ -91,7 +96,7 @@ int check_conditions(int conditions_count, Condition* conditions, char* item_buf
                 condition_met = (cmp_result < 0);
                 break;
             case ConditionType_In:
-                condition_met = strstr(field_ptr, cond->str_val) != NULL;
+                condition_met = strstr(field_str, cond->str_val) != NULL;
                 break;
             default:
                 condition_met = 0;

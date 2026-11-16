@@ -118,7 +118,7 @@ int delete_from(int argc, char* argv[])
 			break;
 		}
 
-		if (!rec_header.is_deleted && check_conditions(conditions_count, &conditions, item_buffer))
+		if (!rec_header.is_deleted && check_conditions(conditions_count, conditions, item_buffer))
 		{
 			record_to_delete_count++;
 			uint32_t* temp = (uint32_t*)realloc(offsets_to_delete, record_to_delete_count * sizeof(uint32_t));
