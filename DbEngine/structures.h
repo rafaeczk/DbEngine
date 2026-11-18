@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdint.h>
+#include <stdio.h>
 #include "config.h"
 
 typedef enum
@@ -87,3 +88,12 @@ typedef struct
 	float float_temp;
 	uint32_t counter;
 } SelectField;
+
+typedef struct
+{
+	FILE* db_file;
+	uint32_t column_offset;
+	DataType data_type;
+	uint8_t order_desc;
+	uint32_t payload_size;
+} OrderContext;

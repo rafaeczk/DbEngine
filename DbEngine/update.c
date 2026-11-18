@@ -231,10 +231,9 @@ int update(int argc, char* argv[])
 	fflush(db_file);
 	printf("\nSukces! Zmodyfikowano %d rekordow.\n\n", records_modified);
 
-	status = 0;
-
-
 	// ============= cleanup =============
+
+	status = 0;
 
 cleanup:
 	free(conditions);
