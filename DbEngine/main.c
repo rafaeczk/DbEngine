@@ -19,6 +19,15 @@
 
 int main(int argc, char* argv[])
 {
+	uint8_t human_readable = 0;
+
+	if (argc > 1 && !_stricmp(argv[1], "-h"))
+	{
+		human_readable = 1;
+		argc--;
+		argv++;
+	}
+
 	// HELP
 
 	if (argc >= 2 && _stricmp(argv[1], "help") == 0)
@@ -36,7 +45,7 @@ int main(int argc, char* argv[])
 
 	// INIT
 
-	if (init(argc, argv) != 0)
+	if (init(argc, argv, human_readable) != 0)
 	{
 		return 1;
 	}
@@ -45,48 +54,48 @@ int main(int argc, char* argv[])
 
 	if (_stricmp(argv[2], "create-table") == 0)
 	{
-		return create_table(argc, argv);
+		return create_table(argc, argv, human_readable);
 	}
 
 	if (_stricmp(argv[2], "drop-table") == 0)
 	{
-		return drop_table(argc, argv);
+		return drop_table(argc, argv, human_readable);
 	}
 
 	if (_stricmp(argv[2], "insert-into") == 0)
 	{
-		return insert_into(argc, argv);
+		return insert_into(argc, argv, human_readable);
 	}
 
 	if (_stricmp(argv[2], "update") == 0)
 	{
-		return update(argc, argv);
+		return update(argc, argv, human_readable);
 	}
 
 	// DELETE
 
 	if (_stricmp(argv[2], "delete-from") == 0)
 	{
-		return delete_from(argc, argv);
+		return delete_from(argc, argv, human_readable);
 	}
 
 	// MAINTENANCE
 
 	if (_stricmp(argv[2], "vacuum") == 0)
 	{
-		return vacuum(argc, argv);
+		return vacuum(argc, argv, human_readable);
 	}
 
 	// READ
 
 	if (_stricmp(argv[2], "show-tables") == 0)
 	{
-		return show_tables(argc, argv);
+		return show_tables(argc, argv, human_readable);
 	}
 
 	if (_stricmp(argv[2], "select") == 0)
 	{
-		return select_from(argc, argv);
+		return select_from(argc, argv, human_readable);
 	}
 
 	fprintf(stderr, "Blad: Nieznana komenda '%s'!\n", argv[2]);

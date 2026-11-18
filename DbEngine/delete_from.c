@@ -12,7 +12,7 @@
 #include "parse_conditions.h"
 #include "check_conditions.h"
 
-int delete_from(int argc, char* argv[])
+int delete_from(int argc, char* argv[], uint8_t human_readable)
 {
 	int status = 1;
 	FILE* db_file = NULL;
@@ -156,7 +156,14 @@ int delete_from(int argc, char* argv[])
 	}
 
 	fflush(db_file);
-	printf("\nPomyslnie usunieto %d z %d rekord(ow) z tabeli '%s'.\n\n", deleted_records_count, record_to_delete_count, table_name);
+	if (human_readable)
+	{
+		printf("\nPomyslnie usunieto %d z %d rekord(ow) z tabeli '%s'.\n\n", deleted_records_count, record_to_delete_count, table_name);
+	}
+	else
+	{
+		printf("%d\n", deleted_records_count);
+	}
 	status = 0;
 
 cleanup:

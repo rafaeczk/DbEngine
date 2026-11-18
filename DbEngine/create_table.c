@@ -9,7 +9,7 @@
 #include "structures.h"
 #include "print_help.h"
 
-int create_table(int argc, char* argv[])
+int create_table(int argc, char* argv[], uint8_t human_readable)
 {
 	int status = 1;
 	FILE* db_file = NULL;
@@ -182,7 +182,14 @@ int create_table(int argc, char* argv[])
 	}
 
 	fflush(db_file);
-	printf("\nUtworzono tabele '%s' (%u kolumn) w bazie '%s'.\n\n", table_name, column_count, db_filename);
+	if (human_readable)
+	{
+		printf("\nUtworzono tabele '%s' (%u kolumn) w bazie '%s'.\n\n", table_name, column_count, db_filename);
+	}
+	else
+	{
+		printf("1\n");
+	}
 	status = 0;
 
 cleanup:

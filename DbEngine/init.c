@@ -8,7 +8,7 @@
 #include "config.h"
 #include "structures.h"
 
-int init(int argc, char* argv[])
+int init(int argc, char* argv[], uint8_t human_readable)
 {
 	int status = 1;
 	FILE* db_file = NULL;
@@ -38,7 +38,10 @@ int init(int argc, char* argv[])
 		}
 
 		fflush(db_file);
-		printf("\nInicjalizacja nowej bazy danych: %s\n\n", db_filename);
+		if (human_readable)
+		{
+			printf("\nInicjalizacja nowej bazy danych: %s\n\n", db_filename);
+		}
 	}
 	else
 	{

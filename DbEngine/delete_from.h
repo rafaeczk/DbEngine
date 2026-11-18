@@ -1,3 +1,5 @@
 #pragma once
 
-int delete_from(int argc, char* argv[]);
+#include <stdint.h>
+
+int delete_from(int argc, char* argv[], uint8_t human_readable);

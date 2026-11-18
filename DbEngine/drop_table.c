@@ -7,7 +7,7 @@
 #include "config.h"
 #include "print_help.h"
 
-int drop_table(int argc, char* argv[])
+int drop_table(int argc, char* argv[], uint8_t human_readable)
 {
 	int status = 1;
 	FILE* db_file = NULL;
@@ -89,7 +89,14 @@ int drop_table(int argc, char* argv[])
 	}
 
 	fflush(db_file);
-	printf("\nTabela '%s' oraz jej rekordy zostaly usuniete z bazy '%s'.\n\n", table_name, db_filename);
+	if (human_readable)
+	{
+		printf("\nTabela '%s' oraz jej rekordy zostaly usuniete z bazy '%s'.\n\n", table_name, db_filename);
+	}
+	else
+	{
+		printf("1\n");
+	}
 	status = 0;
 
 cleanup:

@@ -9,7 +9,7 @@
 #include "config.h"
 #include "print_help.h"
 
-int vacuum(int argc, char* argv[])
+int vacuum(int argc, char* argv[], uint8_t human_readable)
 {
 	int status = 1;
 	FILE* old_file = NULL;
@@ -195,10 +195,17 @@ int vacuum(int argc, char* argv[])
 		goto cleanup;
 	}
 
-	printf("\nOperacja VACUUM zakonczona sukcesem dla bazy '%s'.\n", db_filename);
-	printf(" - Usuniete / pominiete rekordy: %u\n", total_removed_records);
-	printf(" - Zachowane aktywne rekordy  : %u\n", total_retained_records);
-	printf(" - Rozmiar przed: %ld B -> po: %ld B (odzyskane: %ld B)\n\n", old_size, new_size, (old_size > new_size ? old_size - new_size : 0));
+	if (human_readable)
+	{
+		printf("\nOperacja VACUUM zakonczona sukcesem dla bazy '%s'.\n", db_filename);
+		printf(" - Usuniete / pominiete rekordy: %u\n", total_removed_records);
+		printf(" - Zachowane aktywne rekordy  : %u\n", total_retained_records);
+		printf(" - Rozmiar przed: %ld B -> po: %ld B (odzyskane: %ld B)\n\n", old_size, new_size, (old_size > new_size ? old_size - new_size : 0));
+	}
+	else
+	{
+		printf("%u\n", total_removed_records);
+	}
 
 	status = 0;
 

@@ -7,6 +7,7 @@
 #include "check_conditions.h"
 #include "str_to_function_type.h"
 #include "function_type_to_str.h"
+#include "printh.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -16,7 +17,7 @@
 
 int compare_records(void* context, const void* a, const void* b);
 
-int select_from(int argc, char* argv[])
+int select_from(int argc, char* argv[], uint8_t human_readable)
 {
 	int status = 1;
 
@@ -374,33 +375,36 @@ int select_from(int argc, char* argv[])
 
 	// ============= print header =============
 
-	printf("\n--- Tabela: %s ---\n", target_table->name);
-
-	printf("LP   ");
-	for (int j = 0; j < requested_fields_count; j++)
+	if (human_readable)
 	{
-		char header_buf[32];
-		if (requested_fields[j]->function_type == FunctionType_None)
-		{
-			snprintf(header_buf, sizeof(header_buf), "%s", requested_fields[j]->name);
-		}
-		else
-		{
-			snprintf(header_buf, sizeof(header_buf), "%s:%s",
-				function_type_to_str(requested_fields[j]->function_type),
-				requested_fields[j]->name);
-		}
+		printf("\n--- Tabela: %s ---\n", target_table->name);
 
-		printf("%-15s", header_buf);
-	}
-	printf("\n");
+		printf("LP   ");
+		for (int j = 0; j < requested_fields_count; j++)
+		{
+			char header_buf[32];
+			if (requested_fields[j]->function_type == FunctionType_None)
+			{
+				snprintf(header_buf, sizeof(header_buf), "%s", requested_fields[j]->name);
+			}
+			else
+			{
+				snprintf(header_buf, sizeof(header_buf), "%s:%s",
+					function_type_to_str(requested_fields[j]->function_type),
+					requested_fields[j]->name);
+			}
 
-	printf("-----");
-	for (int j = 0; j < requested_fields_count; j++)
-	{
-		printf("---------------");
+			printf("%-15s", header_buf);
+		}
+		printf("\n");
+
+		printf("-----");
+		for (int j = 0; j < requested_fields_count; j++)
+		{
+			printf("---------------");
+		}
+		printf("\n");
 	}
-	printf("\n");
 
 	// ============= print items =============
 
@@ -420,7 +424,10 @@ int select_from(int argc, char* argv[])
 			break;
 		}
 
-		printf("%-5d", index+1);
+		if (human_readable)
+		{
+			printf("%-5d", index+1);
+		}
 
 		for (int j = 0; j < requested_fields_count; j++)
 		{
@@ -429,26 +436,31 @@ int select_from(int argc, char* argv[])
 
 			// match every function type
 
+			if (!human_readable && j != 0)
+			{
+				printf(",");
+			}
+
 			if (field->function_type == FunctionType_None)
 			{
 				if (field->type == TYPE_INT)
 				{
 					int32_t val = *(int32_t*)field_ptr;
-					printf("%-15d", val);
+					printh_int(val, human_readable);
 				}
 				else if (field->type == TYPE_INT_AUTO_INC)
 				{
 					uint32_t val = *(uint32_t*)field_ptr;
-					printf("%-15u", val);
+					printh_uint(val, human_readable);
 				}
 				else if (field->type == TYPE_FLOAT)
 				{
 					float val = *(float*)field_ptr;
-					printf("%-15.2f", val);
+					printh_float(val, human_readable);
 				}
 				else if (field->type == TYPE_STRING)
 				{
-					printf("%-15.*s", (int)field->size, field_ptr);
+					printh_str(field_ptr, human_readable, field->size);
 				}
 			}
 
@@ -461,7 +473,7 @@ int select_from(int argc, char* argv[])
 						field->int_temp = val;
 					if (val > field->int_temp)
 						field->int_temp = val;
-					printf("%-15d", field->int_temp);
+					printh_int(field->int_temp, human_readable);
 				}
 				else if (field->type == TYPE_INT_AUTO_INC)
 				{
@@ -470,7 +482,7 @@ int select_from(int argc, char* argv[])
 						field->uint_temp = val;
 					if (val > field->uint_temp)
 						field->uint_temp = val;
-					printf("%-15u", field->uint_temp);
+					printh_uint(field->uint_temp, human_readable);
 				}
 				else if (field->type == TYPE_FLOAT)
 				{
@@ -479,7 +491,7 @@ int select_from(int argc, char* argv[])
 						field->float_temp = val;
 					if (val > field->float_temp)
 						field->float_temp = val;
-					printf("%-15.2f", field->float_temp);
+					printh_float(field->float_temp, human_readable);
 				}
 			}
 
@@ -492,7 +504,7 @@ int select_from(int argc, char* argv[])
 						field->int_temp = val;
 					if (val < field->int_temp)
 						field->int_temp = val;
-					printf("%-15d", field->int_temp);
+					printh_int(field->int_temp, human_readable);
 				}
 				else if (field->type == TYPE_INT_AUTO_INC)
 				{
@@ -501,7 +513,7 @@ int select_from(int argc, char* argv[])
 						field->uint_temp = val;
 					if (val < field->uint_temp)
 						field->uint_temp = val;
-					printf("%-15u", field->uint_temp);
+					printh_uint(field->uint_temp, human_readable);
 				}
 				else if (field->type == TYPE_FLOAT)
 				{
@@ -510,7 +522,7 @@ int select_from(int argc, char* argv[])
 						field->float_temp = val;
 					if (val < field->float_temp)
 						field->float_temp = val;
-					printf("%-15.2f", field->float_temp);
+					printh_float(field->float_temp, human_readable);
 				}
 			}
 
@@ -523,7 +535,7 @@ int select_from(int argc, char* argv[])
 					field->counter++;
 					field->int_temp += val;
 					avg = (float)field->int_temp / field->counter;
-					printf("%-15.2f", avg);
+					printh_float(avg, human_readable);
 				}
 				else if (field->type == TYPE_INT_AUTO_INC)
 				{
@@ -531,7 +543,7 @@ int select_from(int argc, char* argv[])
 					field->counter++;
 					field->uint_temp += val;
 					avg = (float)field->uint_temp / field->counter;
-					printf("%-15.2f", avg);
+					printh_float(avg, human_readable);
 				}
 				else if (field->type == TYPE_FLOAT)
 				{
@@ -539,7 +551,7 @@ int select_from(int argc, char* argv[])
 					field->counter++;
 					field->float_temp += val;
 					avg = (float)field->float_temp / field->counter;
-					printf("%-15.2f", avg);
+					printh_float(avg, human_readable);
 				}
 			}
 
@@ -549,31 +561,34 @@ int select_from(int argc, char* argv[])
 				{
 					int32_t val = *(int32_t*)field_ptr;
 					field->int_temp += val;
-					printf("%-15d", field->int_temp);
+					printh_int(field->int_temp, human_readable);
 				}
 				else if (field->type == TYPE_INT_AUTO_INC)
 				{
 					uint32_t val = *(uint32_t*)field_ptr;
 					field->uint_temp += val;
-					printf("%-15u", field->uint_temp);
+					printh_uint(field->uint_temp, human_readable);
 				}
 				else if (field->type == TYPE_FLOAT)
 				{
 					float val = *(float*)field_ptr;
 					field->float_temp += val;
-					printf("%-15.2f", field->float_temp);
+					printh_float(field->float_temp, human_readable);
 				}
 			}
 		}
 		printf("\n");
 	}
 
-	printf("\n");
+	if (human_readable) 
+	{
+		printf("\n");
 
-	printf("Zwrocono rekordow: %d.\n", index);
-	printf("Wszystkich rekordow: %d.\n", target_table->record_count);
+		printf("Zwrocono rekordow: %d.\n", index);
+		printf("Wszystkich rekordow: %d.\n", target_table->record_count);
 
-	printf("\n");
+		printf("\n");
+	}
 
 	// ============= cleanup =============
 

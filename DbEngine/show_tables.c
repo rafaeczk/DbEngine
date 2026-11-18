@@ -5,7 +5,7 @@
 #include "structures.h"
 #include "data_type_to_string.h"
 
-int show_tables(int argc, char* argv[])
+int show_tables(int argc, char* argv[], uint8_t human_readable)
 {
 	int status = 1;
 	FILE* db_file = NULL;
@@ -25,33 +25,49 @@ int show_tables(int argc, char* argv[])
 		goto cleanup;
 	}
 
-	printf("\n--- Tabele (Liczba tabel: %u) ---\n", header.table_count);
-	for (uint32_t i = 0; i < header.table_count; i++)
+	if (human_readable)
 	{
-		printf("\n-- Tabela: %s (Kolumn: %u, Rekordow: %u) --\n", header.tables[i].name, header.tables[i].column_count, header.tables[i].record_count);
-
-		const char* fields_label = "Pola: ";
-		printf("%-8s", fields_label);
-		for (uint16_t j = 0; j < header.tables[i].column_count; j++)
+		printf("\n--- Tabele (Liczba tabel: %u) ---\n", header.table_count);
+		for (uint32_t i = 0; i < header.table_count; i++)
 		{
-			Column* col = &header.tables[i].columns[j];
-			printf("%-15s", col->name);
-		}
+			printf("\n-- Tabela: %s (Kolumn: %u, Rekordow: %u) --\n", header.tables[i].name, header.tables[i].column_count, header.tables[i].record_count);
 
-		printf("\n");
+			const char* fields_label = "Pola: ";
+			printf("%-8s", fields_label);
+			for (uint16_t j = 0; j < header.tables[i].column_count; j++)
+			{
+				Column* col = &header.tables[i].columns[j];
+				printf("%-15s", col->name);
+			}
 
-		const char* types_label = "Typy: ";
-		printf("%-8s", types_label);
-		for (uint16_t j = 0; j < header.tables[i].column_count; j++)
-		{
-			Column* col = &header.tables[i].columns[j];
-			printf("%-15s", data_type_to_string(col->type));
+			printf("\n");
+
+			const char* types_label = "Typy: ";
+			printf("%-8s", types_label);
+			for (uint16_t j = 0; j < header.tables[i].column_count; j++)
+			{
+				Column* col = &header.tables[i].columns[j];
+				printf("%-15s", data_type_to_string(col->type));
+			}
+
+			printf("\n");
 		}
 
 		printf("\n");
 	}
-
-	printf("\n");
+	else
+	{
+		for (uint32_t i = 0; i < header.table_count; i++)
+		{
+			printf("%s", header.tables[i].name);
+			for (uint16_t j = 0; j < header.tables[i].column_count; j++)
+			{
+				Column* col = &header.tables[i].columns[j];
+				printf(",%s:%s", col->name, data_type_to_string(col->type));
+			}
+			printf("\n");
+		}
+	}
 	status = 0;
 
 cleanup:

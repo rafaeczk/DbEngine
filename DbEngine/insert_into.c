@@ -11,7 +11,7 @@
 #include "type_validator.h"
 #include "data_type_to_string.h"
 
-int insert_into(int argc, char* argv[])
+int insert_into(int argc, char* argv[], uint8_t human_readable)
 {
 	int status = 1;
 	FILE* db_file = NULL;
@@ -208,7 +208,14 @@ int insert_into(int argc, char* argv[])
 	}
 
 	fflush(db_file);
-	printf("\nPomyslnie dodano %d rekord(ow) do tabeli '%s'.\n\n", records_count_to_insert, table_name);
+	if (human_readable)
+	{
+		printf("\nPomyslnie dodano %d rekord(ow) do tabeli '%s'.\n\n", records_count_to_insert, table_name);
+	}
+	else
+	{
+		printf("%d\n", records_count_to_insert);
+	}
 	status = 0;
 
 cleanup:

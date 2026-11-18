@@ -21,7 +21,7 @@ typedef struct
 	char str_val[256];
 } UpdateValue;
 
-int update(int argc, char* argv[])
+int update(int argc, char* argv[], uint8_t human_readable)
 {
 	int status = 1;
 
@@ -229,7 +229,14 @@ int update(int argc, char* argv[])
 	}
 
 	fflush(db_file);
-	printf("\nSukces! Zmodyfikowano %d rekordow.\n\n", records_modified);
+	if (human_readable)
+	{
+		printf("\nSukces! Zmodyfikowano %d rekordow.\n\n", records_modified);
+	}
+	else
+	{
+		printf("%d\n", records_modified);
+	}
 
 	// ============= cleanup =============
 

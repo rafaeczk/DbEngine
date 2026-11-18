@@ -23,6 +23,7 @@
     <ClCompile Include="create_table.c" />
     <ClCompile Include="function_type_to_str.c" />
     <ClCompile Include="parse_conditions.c" />
+    <ClCompile Include="printh.c" />
     <ClCompile Include="str_to_function_type.c" />
     <ClCompile Include="type_validator.c" />
     <ClCompile Include="data_type_to_string.c" />
@@ -43,6 +44,7 @@
     <ClInclude Include="create_table.h" />
     <ClInclude Include="function_type_to_str.h" />
     <ClInclude Include="parse_conditions.h" />
+    <ClInclude Include="printh.h" />
     <ClInclude Include="type_validator.h" />
     <ClInclude Include="data_type_to_string.h" />
     <ClInclude Include="delete_from.h" />
